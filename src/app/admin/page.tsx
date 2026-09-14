@@ -89,6 +89,24 @@ export default async function AdminPage() {
         <article><span>Order value</span><strong>{formatPrice(revenue)}</strong><small>excluding cancelled</small></article>
       </section>
 
+      <section className="admin-management-links">
+        <Link href="/admin/products/new">
+          <span>01</span>
+          <div><strong>Add product</strong><small>Create a new listing with image, price and stock.</small></div>
+          <b>↗</b>
+        </Link>
+        <Link href="/admin/sellers">
+          <span>02</span>
+          <div><strong>Manage sellers</strong><small>Onboard shops, artisans and seller contacts.</small></div>
+          <b>↗</b>
+        </Link>
+        <Link href="/admin/categories">
+          <span>03</span>
+          <div><strong>Manage categories</strong><small>Organize the storefront and category visibility.</small></div>
+          <b>↗</b>
+        </Link>
+      </section>
+
       <section className="admin-grid">
         <div className="admin-panel">
           <div className="admin-panel-head"><h2>Recent orders</h2><span>Latest 20</span></div>
