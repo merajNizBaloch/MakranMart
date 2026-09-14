@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { WishlistButton } from "@/components/WishlistButton";
 import { ProductCard } from "@/components/ProductCard";
 import { formatPrice } from "@/lib/catalog";
 import { getStorefrontProducts } from "@/lib/storefront";
@@ -47,28 +48,45 @@ export default async function ProductPage({
           </div>
 
           <h1>{product.title}</h1>
+
           <div className="detail-price-row">
             <p className="detail-price">{formatPrice(product.price)}</p>
             {product.compareAtPrice && product.compareAtPrice > product.price && (
               <del>{formatPrice(product.compareAtPrice)}</del>
             )}
           </div>
+
           <p className="detail-description">{product.description}</p>
 
-          <div className="seller-note">
-            <span className="seller-avatar">{product.seller.slice(0, 1)}</span>
-            <div>
-              <small>Sold by</small>
-              <strong>{product.seller}</strong>
-              <span>{product.location}</span>
+          {product.sellerSlug ? (
+            <Link href={`/seller/${product.sellerSlug}`} className="seller-note seller-note-link">
+              <span className="seller-avatar">{product.seller.slice(0, 1)}</span>
+              <div>
+                <small>Sold by</small>
+                <strong>{product.seller}{product.sellerVerified ? " ✓" : ""}</strong>
+                <span>{product.location}</span>
+              </div>
+              <b>↗</b>
+            </Link>
+          ) : (
+            <div className="seller-note">
+              <span className="seller-avatar">{product.seller.slice(0, 1)}</span>
+              <div>
+                <small>Sold by</small>
+                <strong>{product.seller}</strong>
+                <span>{product.location}</span>
+              </div>
             </div>
-          </div>
+          )}
 
-          <AddToCartButton product={product} />
+          <div className="product-primary-actions">
+            <AddToCartButton product={product} />
+            <WishlistButton productId={product.id} large />
+          </div>
 
           <div className="detail-meta">
             <div><span>Availability</span><strong>{product.stock ?? 0} in stock</strong></div>
-            <div><span>Delivery</span><strong>Across Pakistan</strong></div>
+            <div><span>Delivery</span><strong>Calculated by province at checkout</strong></div>
             <div><span>Payment</span><strong>Cash on delivery ready</strong></div>
             <div><span>Support</span><strong>Verified seller assistance</strong></div>
           </div>
