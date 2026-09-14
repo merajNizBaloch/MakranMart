@@ -5,23 +5,27 @@ A modern shopping marketplace for Balochistan and Pakistan.
 ## Current features
 
 - Animated storefront and floating category navigation
-- Product catalog, category pages and product details
-- Persistent cart drawer
+- Database-backed product catalog, categories and product details
+- Real product image uploads through Supabase Storage
+- Persistent shopping cart
 - Cash-on-delivery checkout
-- Supabase customer authentication
-- Database-backed products and live inventory
-- Transactional server-side order creation
-- Admin dashboard for orders and inventory
+- Transactional stock-safe order creation
+- Customer sign in / sign up
+- Customer account page with order history
+- Protected MakranMart admin dashboard
+- One-time first-admin bootstrap
+- Product creation and editing
+- Stock and visibility controls
+- Featured products, sale pricing and SKU support
 - Order status controls
-- Product stock and visibility controls
-- Row Level Security
-- Seeded starter catalog
+- Row Level Security across all MakranMart tables
+- Shared Supabase project with strict `makranmart_` namespacing
 
 ## Supabase
 
 MakranMart uses the existing TechCraft Supabase project currently named `realstate-os`.
 
-To keep MakranMart isolated from the other TechCraft apps in that shared project, every database object is namespaced with `makranmart_`, including:
+MakranMart data is isolated with namespaced objects:
 
 - `makranmart_profiles`
 - `makranmart_categories`
@@ -30,17 +34,9 @@ To keep MakranMart isolated from the other TechCraft apps in that shared project
 - `makranmart_orders`
 - `makranmart_order_items`
 - `makranmart_place_order(...)`
+- Storage bucket: `makranmart-products`
 
-No existing Realstate-OS, DineCore, PharmaFlow, Resumly, LinkCraft, MartEdge or other tables are reused or modified.
-
-The public project URL and publishable key are configured as safe fallbacks in the Supabase client files. They can still be overridden with:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-```
-
-No service-role key is required by the MakranMart application.
+No existing Realstate-OS, DineCore, PharmaFlow, Resumly, LinkCraft, MartEdge or other app tables are reused or modified.
 
 ## Local setup
 
@@ -51,20 +47,22 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
-## Database migrations
+## Admin setup
 
-The applied schema lives under `supabase/migrations/`.
-
-## Admin access
-
-Create or sign in to a MakranMart account first. Then set that user's row in `makranmart_profiles.role` to `admin` to enable `/admin`.
+1. Create or sign in to a MakranMart account.
+2. Open `/admin`.
+3. If no MakranMart admin exists yet, use **Make this account the first admin**.
+4. The one-time claim automatically becomes unavailable after the first admin is created.
 
 ## Main routes
 
 - `/` storefront
 - `/products` catalog
-- `/category/[slug]` category browsing
+- `/category/[slug]` categories
 - `/product/[slug]` product details
 - `/checkout` checkout
-- `/login` account sign in / sign up
-- `/admin` protected admin dashboard
+- `/login` sign in / sign up
+- `/account` customer account and order history
+- `/admin` operations dashboard
+- `/admin/products/new` create products
+- `/admin/products/[id]/edit` edit products
