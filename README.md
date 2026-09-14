@@ -27,6 +27,12 @@ A modern shopping marketplace for Balochistan and Pakistan.
 - Category creation, ordering and visibility management
 - Stock and visibility controls
 - Featured products, sale pricing and SKU support
+- Deep order management with customer/address details
+- Stock-safe cancellation and cancelled-order reactivation
+- Customer-visible order timelines and admin notes
+- Printable order invoices
+- WhatsApp customer contact from order pages
+- Sales analytics, status overview and top-product reporting
 - Order status controls
 - Row Level Security across all MakranMart tables
 - Shared Supabase project with strict `makranmart_` namespacing
@@ -46,6 +52,7 @@ MakranMart data is isolated with namespaced objects including:
 - `makranmart_shipping_rules`
 - `makranmart_orders`
 - `makranmart_order_items`
+- `makranmart_order_events`
 - `makranmart_place_order(...)`
 - Storage bucket: `makranmart-products`
 
@@ -88,7 +95,10 @@ Then open `http://localhost:3000`.
 - `/checkout` checkout with live delivery estimate
 - `/login` sign in / sign up
 - `/account` customer account and order history
-- `/admin` operations dashboard
+- `/account/orders/[id]` customer order tracking and printable invoice
+- `/admin` operations dashboard and sales analytics
+- `/admin/orders` searchable order management
+- `/admin/orders/[id]` order details, invoice, WhatsApp contact and timeline
 - `/admin/products/new` create products
 - `/admin/products/[id]/edit` edit products
 - `/admin/sellers` seller management
