@@ -9,6 +9,11 @@ export type Product = {
   description: string;
   seller: string;
   location: string;
+  imageUrl?: string | null;
+  stock?: number;
+  compareAtPrice?: number | null;
+  sku?: string | null;
+  featured?: boolean;
 };
 
 export const categories = [
