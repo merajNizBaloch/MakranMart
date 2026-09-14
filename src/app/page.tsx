@@ -46,7 +46,7 @@ export default async function Home() {
           {categories.map((category) => (
             <Link
               key={category.label}
-              href={category.slug === "local-sellers" ? "/#local" : `/category/${category.slug}`}
+              href={category.slug === "local-sellers" ? "/sellers" : `/category/${category.slug}`}
               className={`category-chip ${category.tone} ${category.className}`}
             >
               <span className="chip-icon">{category.icon}</span>
@@ -87,7 +87,7 @@ export default async function Home() {
             MakranMart brings artisans, shops and emerging brands from Balochistan
             into one clean storefront built for buyers across Pakistan.
           </p>
-          <Link href="/category/balochi-crafts" className="primary-cta dark-on-light">
+          <Link href="/sellers" className="primary-cta dark-on-light">
             Explore local sellers <span>↗</span>
           </Link>
         </div>
