@@ -77,7 +77,7 @@ export default async function AccountPage() {
                     <div className="account-order-top">
                       <div>
                         <small>Order</small>
-                        <strong>{order.order_number}</strong>
+                        <strong><Link href={`/account/orders/${order.id}`}>{order.order_number}</Link></strong>
                       </div>
                       <span className={`status-pill status-${order.status}`}>{order.status}</span>
                     </div>
@@ -93,7 +93,10 @@ export default async function AccountPage() {
 
                     <div className="account-order-foot">
                       <span>{new Date(order.created_at).toLocaleDateString("en-PK")} · {order.city}</span>
-                      <strong>{formatPrice(Number(order.total))}</strong>
+                      <div className="account-order-foot-actions">
+                        <Link href={`/account/orders/${order.id}`}>Track order ↗</Link>
+                        <strong>{formatPrice(Number(order.total))}</strong>
+                      </div>
                     </div>
                   </article>
                 ))}
