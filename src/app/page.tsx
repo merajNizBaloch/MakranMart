@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, featuredProducts } from "@/lib/catalog";
+import { categories } from "@/lib/catalog";
+import { getStorefrontProducts } from "@/lib/storefront";
 
-export default function Home() {
+export default async function Home() {
+  const products = await getStorefrontProducts();
+  const featuredProducts = products.slice(0, 4);
+
   return (
     <main>
       <section className="hero-shell">
