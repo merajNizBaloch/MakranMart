@@ -37,6 +37,7 @@ export async function PATCH(
   }
 
   const { id } = await params;
+
   const { error } = await supabase
     .from("makranmart_sellers")
     .update({
@@ -44,11 +45,6 @@ export async function PATCH(
       slug,
       location: String(body.location || "").trim() || null,
       description: String(body.description || "").trim() || null,
-      contact_name: String(body.contactName || "").trim() || null,
-      phone: String(body.phone || "").trim() || null,
-      whatsapp: String(body.whatsapp || "").trim() || null,
-      email: String(body.email || "").trim().toLowerCase() || null,
-      notes: String(body.notes || "").trim() || null,
       is_verified: Boolean(body.isVerified),
       is_active: Boolean(body.isActive),
       updated_at: new Date().toISOString(),
@@ -61,6 +57,22 @@ export async function PATCH(
       { error: duplicate ? "That seller slug is already in use." : "Could not update seller." },
       { status: duplicate ? 409 : 500 }
     );
+  }
+
+  const { error: privateError } = await supabase
+    .from("makranmart_seller_private")
+    .upsert({
+      seller_id: id,
+      contact_name: String(body.contactName || "").trim() || null,
+      phone: String(body.phone || "").trim() || null,
+      whatsapp: String(body.whatsapp || "").trim() || null,
+      email: String(body.email || "").trim().toLowerCase() || null,
+      notes: String(body.notes || "").trim() || null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "seller_id" });
+
+  if (privateError) {
+    return NextResponse.json({ error: "Seller saved, but private contact details could not be updated." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
