@@ -82,6 +82,7 @@ Then open `http://localhost:3000`.
 - `/products` searchable catalog
 - `/category/[slug]` categories
 - `/product/[slug]` product details
+- `/sellers` public seller directory
 - `/seller/[slug]` public seller store
 - `/wishlist` saved products
 - `/checkout` checkout with live delivery estimate
