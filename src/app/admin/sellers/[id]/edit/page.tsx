@@ -24,7 +24,7 @@ export default async function EditSellerPage({
 
   const { data: seller } = await supabase
     .from("makranmart_sellers")
-    .select("id, name, slug, location, contact_name, phone, whatsapp, email, notes, is_verified, is_active")
+    .select("id, name, slug, location, description, contact_name, phone, whatsapp, email, notes, is_verified, is_active")
     .eq("id", id)
     .maybeSingle();
 
