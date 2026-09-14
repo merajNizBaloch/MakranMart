@@ -8,6 +8,7 @@ type Seller = {
   name: string;
   slug: string;
   location: string | null;
+  description: string | null;
   contact_name: string | null;
   phone: string | null;
   whatsapp: string | null;
@@ -42,6 +43,7 @@ export function AdminSellerForm({ initial }: { initial?: Seller }) {
       name: String(form.get("name") || "").trim(),
       slug: String(form.get("slug") || "").trim(),
       location: String(form.get("location") || "").trim(),
+      description: String(form.get("description") || "").trim(),
       contactName: String(form.get("contactName") || "").trim(),
       phone: String(form.get("phone") || "").trim(),
       whatsapp: String(form.get("whatsapp") || "").trim(),
@@ -96,6 +98,16 @@ export function AdminSellerForm({ initial }: { initial?: Seller }) {
           <input name="slug" value={slug} onChange={(event) => setSlug(event.target.value)} required />
         </label>
       </div>
+
+      <label>
+        Public store description
+        <textarea
+          name="description"
+          rows={4}
+          defaultValue={initial?.description || ""}
+          placeholder="Tell customers what this seller is known for."
+        />
+      </label>
 
       <div className="admin-form-grid">
         <label>
