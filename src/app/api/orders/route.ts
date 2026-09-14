@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type OrderRequest = {
@@ -44,119 +43,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
 
-  const admin = createAdminSupabaseClient();
-  if (!admin) {
+  const items = requestedItems.map((item) => ({
+    slug: item.slug,
+    quantity: Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 0))),
+  }));
+
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase.rpc("makranmart_place_order", {
+    p_customer_name: customerName,
+    p_phone: normalizedPhone,
+    p_address: address,
+    p_city: city,
+    p_province: province,
+    p_items: items,
+  });
+
+  if (error || !data?.length) {
+    const message = error?.message || "We could not create your order.";
+    const unavailable =
+      message.toLowerCase().includes("stock") ||
+      message.toLowerCase().includes("unavailable");
+
     return NextResponse.json(
       {
-        error:
-          "MakranMart database is not connected yet. Add the Supabase environment variables to activate orders.",
+        error: unavailable
+          ? "One or more products are unavailable or do not have enough stock."
+          : "We could not create your order. Please try again.",
       },
-      { status: 503 }
+      { status: unavailable ? 400 : 500 }
     );
-  }
-
-  const uniqueSlugs = [...new Set(requestedItems.map((item) => item.slug).filter(Boolean))] as string[];
-  const { data: dbProducts, error: productsError } = await admin
-    .from("products")
-    .select("id, slug, title, price, stock, is_active")
-    .in("slug", uniqueSlugs)
-    .eq("is_active", true);
-
-  if (productsError || !dbProducts) {
-    return NextResponse.json(
-      { error: "We could not verify your cart. Please try again." },
-      { status: 500 }
-    );
-  }
-
-  const normalized = requestedItems
-    .map((item) => {
-      const product = dbProducts.find((entry) => entry.slug === item.slug);
-      const quantity = Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 0)));
-      if (!product || !quantity || Number(product.stock) < quantity) return null;
-      return { product, quantity };
-    })
-    .filter(Boolean) as Array<{
-      product: { id: string; slug: string; title: string; price: number; stock: number };
-      quantity: number;
-    }>;
-
-  if (normalized.length !== requestedItems.length) {
-    return NextResponse.json(
-      { error: "One or more products are unavailable or do not have enough stock." },
-      { status: 400 }
-    );
-  }
-
-  const subtotal = normalized.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
-    0
-  );
-  const deliveryFee = 0;
-  const total = subtotal + deliveryFee;
-
-  const userClient = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = userClient ? await userClient.auth.getUser() : { data: { user: null } };
-
-  const { data: order, error: orderError } = await admin
-    .from("orders")
-    .insert({
-      customer_id: user?.id ?? null,
-      customer_name: customerName,
-      phone: normalizedPhone,
-      address,
-      city,
-      province,
-      payment_method: "cod",
-      status: "pending",
-      subtotal,
-      delivery_fee: deliveryFee,
-      total,
-    })
-    .select("id, order_number")
-    .single();
-
-  if (orderError || !order) {
-    return NextResponse.json(
-      { error: "We could not create your order. Please try again." },
-      { status: 500 }
-    );
-  }
-
-  const { error: itemsError } = await admin.from("order_items").insert(
-    normalized.map(({ product, quantity }) => ({
-      order_id: order.id,
-      product_id: product.id,
-      product_slug: product.slug,
-      title: product.title,
-      unit_price: Number(product.price),
-      quantity,
-    }))
-  );
-
-  if (itemsError) {
-    await admin.from("orders").delete().eq("id", order.id);
-    return NextResponse.json(
-      { error: "We could not save the order items. Please try again." },
-      { status: 500 }
-    );
-  }
-
-  for (const { product, quantity } of normalized) {
-    await admin
-      .from("products")
-      .update({
-        stock: Math.max(0, Number(product.stock) - quantity),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", product.id);
   }
 
   return NextResponse.json({
     ok: true,
-    orderNumber: order.order_number,
-    total,
+    orderNumber: data[0].order_number,
+    total: Number(data[0].total),
   });
 }
