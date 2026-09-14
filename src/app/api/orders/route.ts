@@ -79,5 +79,6 @@ export async function POST(request: Request) {
     ok: true,
     orderNumber: data[0].order_number,
     total: Number(data[0].total),
+    deliveryFee: Number(data[0].delivery_fee || 0),
   });
 }
