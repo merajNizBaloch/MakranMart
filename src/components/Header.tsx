@@ -1,0 +1,30 @@
+"use client";
+
+import Link from "next/link";
+import { useCart } from "@/components/CartProvider";
+
+export function Header({ light = false }: { light?: boolean }) {
+  const { count, openCart } = useCart();
+
+  return (
+    <nav className={`nav-wrap site-nav ${light ? "nav-light" : ""}`}>
+      <Link href="/" className="brand" aria-label="MakranMart home">
+        <span className="brand-mark">M</span>
+        <span>MakranMart</span>
+      </Link>
+
+      <div className="nav-links">
+        <Link href="/products">Shop</Link>
+        <Link href="/category/balochi-crafts">Local finds</Link>
+        <Link href="/#local">Sellers</Link>
+      </div>
+
+      <div className="nav-actions">
+        <Link href="/products" className="icon-button search-link" aria-label="Search products">⌕</Link>
+        <button className="cart-button" onClick={openCart}>
+          Cart <span className="cart-count">{count}</span>
+        </button>
+      </div>
+    </nav>
+  );
+}
