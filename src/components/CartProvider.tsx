@@ -115,8 +115,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           ) : (
             items.map((item) => (
               <div className="cart-item" key={item.slug}>
-                <Link href={`/product/${item.slug}`} className={`cart-thumb ${item.visual}`} onClick={() => setIsOpen(false)}>
-                  <span>MM</span>
+                <Link
+                  href={`/product/${item.slug}`}
+                  className={`cart-thumb ${item.visual}`}
+                  style={item.imageUrl ? { backgroundImage: `url("${item.imageUrl}")` } : undefined}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {!item.imageUrl && <span>MM</span>}
                 </Link>
                 <div className="cart-item-copy">
                   <Link href={`/product/${item.slug}`} onClick={() => setIsOpen(false)}>{item.title}</Link>
