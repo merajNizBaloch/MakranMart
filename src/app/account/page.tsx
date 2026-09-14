@@ -11,7 +11,7 @@ export default async function AccountPage() {
 
   if (!user) redirect("/login?next=/account");
 
-  const [{ data: profile }, { data: orders }] = await Promise.all([
+  const [{ data: profile }, { data: orders }, { count: wishlistCount }] = await Promise.all([
     supabase
       .from("makranmart_profiles")
       .select("full_name, phone, role")
@@ -22,6 +22,10 @@ export default async function AccountPage() {
       .select("id, order_number, status, total, created_at, city, makranmart_order_items(title, quantity, unit_price)")
       .eq("customer_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("makranmart_wishlist")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id),
   ]);
 
   return (
@@ -36,6 +40,7 @@ export default async function AccountPage() {
             <p>{user.email}</p>
           </div>
           <div className="account-actions">
+            <Link href="/wishlist" className="secondary-cta">Wishlist ({wishlistCount || 0})</Link>
             {profile?.role === "admin" && <Link href="/admin" className="primary-cta">Admin dashboard <span>↗</span></Link>}
             <SignOutButton />
           </div>
@@ -47,6 +52,10 @@ export default async function AccountPage() {
             <div><small>Name</small><strong>{profile?.full_name || "Not set"}</strong></div>
             <div><small>Email</small><strong>{user.email}</strong></div>
             <div><small>Phone</small><strong>{profile?.phone || "Not set"}</strong></div>
+            <Link href="/wishlist" className="account-side-link">
+              <span>♡ Wishlist</span>
+              <strong>{wishlistCount || 0}</strong>
+            </Link>
           </aside>
 
           <section className="account-orders">
