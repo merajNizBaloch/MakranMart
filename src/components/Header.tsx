@@ -21,7 +21,7 @@ export function Header({ light = false }: { light?: boolean }) {
 
       <div className="nav-actions">
         <Link href="/products" className="icon-button search-link" aria-label="Search products">⌕</Link>
-        <Link href="/login" className="account-button">Account</Link>
+        <Link href="/account" className="account-button">Account</Link>
         <button className="cart-button" onClick={openCart}>
           Cart <span className="cart-count">{count}</span>
         </button>
