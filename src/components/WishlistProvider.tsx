@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 type WishlistContextValue = {
@@ -101,13 +101,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const value = useMemo(
-    () => ({ ids, count: ids.size, loading, toggle }),
-    [ids, loading]
-  );
-
   return (
-    <WishlistContext.Provider value={value}>
+    <WishlistContext.Provider value={{ ids, count: ids.size, loading, toggle }}>
       {children}
     </WishlistContext.Provider>
   );
