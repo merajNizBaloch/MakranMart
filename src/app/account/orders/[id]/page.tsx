@@ -24,11 +24,9 @@ export default async function CustomerOrderDetailPage({
       .eq("id", id)
       .eq("customer_id", user.id)
       .maybeSingle(),
-    supabase
-      .from("makranmart_order_events")
-      .select("id, from_status, to_status, note, created_at")
-      .eq("order_id", id)
-      .order("created_at", { ascending: true }),
+    supabase.rpc("makranmart_my_order_events", {
+      p_order_id: id,
+    }),
   ]);
 
   if (!order) notFound();
