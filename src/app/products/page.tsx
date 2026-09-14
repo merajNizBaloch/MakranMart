@@ -1,9 +1,12 @@
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, products } from "@/lib/catalog";
+import { categories } from "@/lib/catalog";
+import { getStorefrontProducts } from "@/lib/storefront";
 import Link from "next/link";
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await getStorefrontProducts();
+
   return (
     <main>
       <div className="catalog-top">
