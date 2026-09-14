@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { ProductCard } from "@/components/ProductCard";
-import { formatPrice, products } from "@/lib/catalog";
+import { formatPrice } from "@/lib/catalog";
+import { getStorefrontProducts } from "@/lib/storefront";
 
 export default async function ProductPage({
   params,
@@ -11,6 +12,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const products = await getStorefrontProducts();
   const product = products.find((item) => item.slug === slug);
   if (!product) notFound();
 
