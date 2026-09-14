@@ -1,4 +1,5 @@
 export type Product = {
+  id?: string;
   slug: string;
   title: string;
   category: string;
@@ -8,6 +9,8 @@ export type Product = {
   visual: string;
   description: string;
   seller: string;
+  sellerSlug?: string;
+  sellerVerified?: boolean;
   location: string;
   imageUrl?: string | null;
   stock?: number;
@@ -41,6 +44,7 @@ export const products: Product[] = [
     visual: "visual-craft",
     description: "A statement tote inspired by traditional Balochi craft, designed for everyday use.",
     seller: "Makran Craft House",
+    sellerSlug: "makran-craft-house",
     location: "Turbat, Balochistan",
   },
   {
@@ -53,6 +57,7 @@ export const products: Product[] = [
     visual: "visual-tech",
     description: "Compact wireless earbuds with clear calls, touch controls and all-day battery life.",
     seller: "Digital Hub",
+    sellerSlug: "digital-hub",
     location: "Quetta, Balochistan",
   },
   {
@@ -65,6 +70,7 @@ export const products: Product[] = [
     visual: "visual-fashion",
     description: "A breathable linen kurta with a clean silhouette for daily wear and warm weather.",
     seller: "Sahil Wear",
+    sellerSlug: "sahil-wear",
     location: "Gwadar, Balochistan",
   },
   {
@@ -77,6 +83,7 @@ export const products: Product[] = [
     visual: "visual-home",
     description: "Warm ambient lighting in a compact modern form for desks, bedsides and reading corners.",
     seller: "Ghar Studio",
+    sellerSlug: "ghar-studio",
     location: "Karachi, Sindh",
   },
   {
@@ -89,6 +96,7 @@ export const products: Product[] = [
     visual: "visual-craft-alt",
     description: "A compact wallet finished with colorful geometric embroidery and practical inner pockets.",
     seller: "Panjgur Handmade",
+    sellerSlug: "panjgur-handmade",
     location: "Panjgur, Balochistan",
   },
   {
@@ -101,6 +109,7 @@ export const products: Product[] = [
     visual: "visual-mobile",
     description: "High-capacity portable charging with dual outputs for travel, work and daily use.",
     seller: "Makran Mobile Center",
+    sellerSlug: "makran-mobile-center",
     location: "Turbat, Balochistan",
   },
   {
@@ -113,6 +122,7 @@ export const products: Product[] = [
     visual: "visual-sport",
     description: "Lightweight trainers with cushioned support for walking, running and daily wear.",
     seller: "Active Pakistan",
+    sellerSlug: "active-pakistan",
     location: "Lahore, Punjab",
   },
   {
@@ -125,6 +135,7 @@ export const products: Product[] = [
     visual: "visual-grocery",
     description: "A carefully packed selection of naturally sweet dates for gifting and everyday snacking.",
     seller: "Makran Foods",
+    sellerSlug: "makran-foods",
     location: "Panjgur, Balochistan",
   },
 ];
