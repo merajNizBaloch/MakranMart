@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, products } from "@/lib/catalog";
+import { categories } from "@/lib/catalog";
+import { getStorefrontProducts } from "@/lib/storefront";
 
 export default async function CategoryPage({
   params,
@@ -13,6 +14,7 @@ export default async function CategoryPage({
   const category = categories.find((item) => item.slug === slug);
   if (!category) notFound();
 
+  const products = await getStorefrontProducts();
   const categoryProducts = products.filter((product) => product.categorySlug === slug);
 
   return (
