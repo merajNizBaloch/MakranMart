@@ -13,6 +13,7 @@ type OrderResult = {
 };
 
 type ShippingEstimate = {
+  available: boolean;
   fee: number;
   etaMinDays: number | null;
   etaMaxDays: number | null;
@@ -23,6 +24,7 @@ export default function CheckoutPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart();
   const [province, setProvince] = useState("Balochistan");
   const [shipping, setShipping] = useState<ShippingEstimate>({
+    available: true,
     fee: 0,
     etaMinDays: null,
     etaMaxDays: null,
@@ -52,6 +54,7 @@ export default function CheckoutPage() {
 
       if (response.ok && result) {
         setShipping({
+          available: result.available !== false,
           fee: Number(result.fee || 0),
           etaMinDays: result.etaMinDays == null ? null : Number(result.etaMinDays),
           etaMaxDays: result.etaMaxDays == null ? null : Number(result.etaMaxDays),
@@ -69,7 +72,7 @@ export default function CheckoutPage() {
 
   async function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (items.length === 0 || submitting) return;
+    if (items.length === 0 || submitting || !shipping.available) return;
 
     setError("");
     setSubmitting(true);
@@ -171,9 +174,11 @@ export default function CheckoutPage() {
                 <strong>
                   {shippingLoading
                     ? "Calculating…"
-                    : shipping.etaMinDays != null && shipping.etaMaxDays != null
-                      ? shipping.etaMinDays + "–" + shipping.etaMaxDays + " days"
-                      : "Shown after checkout"}
+                    : !shipping.available
+                      ? "Unavailable"
+                      : shipping.etaMinDays != null && shipping.etaMaxDays != null
+                        ? shipping.etaMinDays + "–" + shipping.etaMaxDays + " days"
+                        : "Shown after checkout"}
                 </strong>
               </div>
               <div>
@@ -181,12 +186,14 @@ export default function CheckoutPage() {
                 <strong>
                   {shippingLoading
                     ? "…"
-                    : shipping.fee === 0
-                      ? "Free"
-                      : formatPrice(shipping.fee)}
+                    : !shipping.available
+                      ? "Unavailable"
+                      : shipping.fee === 0
+                        ? "Free"
+                        : formatPrice(shipping.fee)}
                 </strong>
               </div>
-              {shipping.freeThreshold && total < shipping.freeThreshold && (
+              {shipping.available && shipping.freeThreshold && total < shipping.freeThreshold && (
                 <p>
                   Add {formatPrice(shipping.freeThreshold - total)} more for free delivery in this zone.
                 </p>
@@ -198,7 +205,11 @@ export default function CheckoutPage() {
               <span><strong>Cash on delivery</strong><small>Pay when your order arrives.</small></span>
             </label>
 
-            <button className="place-order-button" type="submit" disabled={items.length === 0 || submitting}>
+            {!shipping.available && (
+              <p className="checkout-error">Delivery is currently unavailable for this region.</p>
+            )}
+
+            <button className="place-order-button" type="submit" disabled={items.length === 0 || submitting || shippingLoading || !shipping.available}>
               {submitting ? "Placing order…" : "Place order"} <span>↗</span>
             </button>
 
@@ -244,7 +255,7 @@ export default function CheckoutPage() {
             <div><span>Subtotal</span><strong>{formatPrice(total)}</strong></div>
             <div>
               <span>Delivery</span>
-              <strong>{shippingLoading ? "…" : shipping.fee === 0 ? "Free" : formatPrice(shipping.fee)}</strong>
+              <strong>{shippingLoading ? "…" : !shipping.available ? "Unavailable" : shipping.fee === 0 ? "Free" : formatPrice(shipping.fee)}</strong>
             </div>
             <div className="summary-grand"><span>Total</span><strong>{formatPrice(estimatedTotal)}</strong></div>
           </div>
