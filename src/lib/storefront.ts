@@ -13,7 +13,7 @@ export async function getStorefrontProducts(): Promise<Product[]> {
     .gt("stock", 0)
     .order("created_at", { ascending: false });
 
-  if (error || !data?.length) return fallbackProducts;
+  if (error) return fallbackProducts;
 
   return data.map((row) => {
     const category = Array.isArray(row.makranmart_categories)
