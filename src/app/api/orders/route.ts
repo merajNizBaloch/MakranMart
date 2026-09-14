@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { products } from "@/lib/catalog";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -33,7 +32,8 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!/^03\d{9}$/.test(phone.replace(/[\s-]/g, ""))) {
+  const normalizedPhone = phone.replace(/[\s-]/g, "");
+  if (!/^03\d{9}$/.test(normalizedPhone)) {
     return NextResponse.json(
       { error: "Enter a valid Pakistani mobile number." },
       { status: 400 }
@@ -43,29 +43,6 @@ export async function POST(request: Request) {
   if (requestedItems.length === 0 || requestedItems.length > 50) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
-
-  const normalized = requestedItems
-    .map((item) => {
-      const product = products.find((entry) => entry.slug === item.slug);
-      const quantity = Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 0)));
-      if (!product || !quantity) return null;
-      return { product, quantity };
-    })
-    .filter(Boolean) as Array<{ product: (typeof products)[number]; quantity: number }>;
-
-  if (normalized.length !== requestedItems.length) {
-    return NextResponse.json(
-      { error: "One or more products are no longer available." },
-      { status: 400 }
-    );
-  }
-
-  const subtotal = normalized.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
-  const deliveryFee = 0;
-  const total = subtotal + deliveryFee;
 
   const admin = createAdminSupabaseClient();
   if (!admin) {
@@ -78,6 +55,46 @@ export async function POST(request: Request) {
     );
   }
 
+  const uniqueSlugs = [...new Set(requestedItems.map((item) => item.slug).filter(Boolean))] as string[];
+  const { data: dbProducts, error: productsError } = await admin
+    .from("products")
+    .select("id, slug, title, price, stock, is_active")
+    .in("slug", uniqueSlugs)
+    .eq("is_active", true);
+
+  if (productsError || !dbProducts) {
+    return NextResponse.json(
+      { error: "We could not verify your cart. Please try again." },
+      { status: 500 }
+    );
+  }
+
+  const normalized = requestedItems
+    .map((item) => {
+      const product = dbProducts.find((entry) => entry.slug === item.slug);
+      const quantity = Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 0)));
+      if (!product || !quantity || Number(product.stock) < quantity) return null;
+      return { product, quantity };
+    })
+    .filter(Boolean) as Array<{
+      product: { id: string; slug: string; title: string; price: number; stock: number };
+      quantity: number;
+    }>;
+
+  if (normalized.length !== requestedItems.length) {
+    return NextResponse.json(
+      { error: "One or more products are unavailable or do not have enough stock." },
+      { status: 400 }
+    );
+  }
+
+  const subtotal = normalized.reduce(
+    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    0
+  );
+  const deliveryFee = 0;
+  const total = subtotal + deliveryFee;
+
   const userClient = await createServerSupabaseClient();
   const {
     data: { user },
@@ -88,7 +105,7 @@ export async function POST(request: Request) {
     .insert({
       customer_id: user?.id ?? null,
       customer_name: customerName,
-      phone: phone.replace(/[\s-]/g, ""),
+      phone: normalizedPhone,
       address,
       city,
       province,
@@ -111,9 +128,10 @@ export async function POST(request: Request) {
   const { error: itemsError } = await admin.from("order_items").insert(
     normalized.map(({ product, quantity }) => ({
       order_id: order.id,
+      product_id: product.id,
       product_slug: product.slug,
       title: product.title,
-      unit_price: product.price,
+      unit_price: Number(product.price),
       quantity,
     }))
   );
@@ -124,6 +142,16 @@ export async function POST(request: Request) {
       { error: "We could not save the order items. Please try again." },
       { status: 500 }
     );
+  }
+
+  for (const { product, quantity } of normalized) {
+    await admin
+      .from("products")
+      .update({
+        stock: Math.max(0, Number(product.stock) - quantity),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", product.id);
   }
 
   return NextResponse.json({
