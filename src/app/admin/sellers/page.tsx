@@ -15,10 +15,17 @@ export default async function SellersPage() {
 
   if (profile?.role !== "admin") redirect("/admin");
 
-  const { data: sellers } = await supabase
-    .from("makranmart_sellers")
-    .select("id, name, slug, location, contact_name, whatsapp, email, is_verified, is_active, makranmart_products(count)")
-    .order("created_at", { ascending: false });
+  const [{ data: sellers }, { data: privateRows }] = await Promise.all([
+    supabase
+      .from("makranmart_sellers")
+      .select("id, name, slug, location, is_verified, is_active, makranmart_products(count)")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("makranmart_seller_private")
+      .select("seller_id, contact_name, whatsapp, email"),
+  ]);
+
+  const privateBySeller = new Map((privateRows || []).map((row) => [row.seller_id, row]));
 
   return (
     <main className="admin-editor-shell">
@@ -45,6 +52,7 @@ export default async function SellersPage() {
             const productCount = Array.isArray(seller.makranmart_products)
               ? Number(seller.makranmart_products[0]?.count || 0)
               : 0;
+            const privateData = privateBySeller.get(seller.id);
 
             return (
               <article className="management-row" key={seller.id}>
@@ -58,8 +66,8 @@ export default async function SellersPage() {
                   <small>{seller.location || "Location not set"} · {productCount} products</small>
                 </div>
                 <div className="management-meta">
-                  <small>{seller.contact_name || "No contact name"}</small>
-                  <span>{seller.whatsapp || seller.email || "No contact details"}</span>
+                  <small>{privateData?.contact_name || "No contact name"}</small>
+                  <span>{privateData?.whatsapp || privateData?.email || "No contact details"}</span>
                 </div>
                 <Link className="management-edit" href={`/admin/sellers/${seller.id}/edit`}>Edit ↗</Link>
               </article>
