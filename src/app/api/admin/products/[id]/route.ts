@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("makranmart_profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
@@ -30,12 +27,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid product update." }, { status: 400 });
   }
 
-  const admin = createAdminSupabaseClient();
-  if (!admin) return NextResponse.json({ error: "Admin connection is unavailable." }, { status: 503 });
-
   const { id } = await params;
-  const { error } = await admin
-    .from("products")
+  const { error } = await supabase
+    .from("makranmart_products")
     .update({ stock, is_active: isActive, updated_at: new Date().toISOString() })
     .eq("id", id);
 
