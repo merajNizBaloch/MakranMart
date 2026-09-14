@@ -11,11 +11,21 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <article className="product-card">
       <div className={`product-visual ${product.visual}`}>
+        {product.imageUrl ? (
+          <div
+            className="product-photo"
+            style={{ backgroundImage: `url("${product.imageUrl}")` }}
+            aria-hidden="true"
+          />
+        ) : (
+          <>
+            <span className="visual-shape visual-shape-one" />
+            <span className="visual-shape visual-shape-two" />
+            <span className="visual-center-mark">MM</span>
+          </>
+        )}
         <Link href={`/product/${product.slug}`} className="product-visual-link" aria-label={`View ${product.title}`} />
         <span className="product-badge">{product.badge}</span>
-        <span className="visual-shape visual-shape-one" />
-        <span className="visual-shape visual-shape-two" />
-        <span className="visual-center-mark">MM</span>
         <button className="quick-add" onClick={() => addItem(product)} aria-label={`Add ${product.title} to cart`}>
           +
         </button>
@@ -25,7 +35,12 @@ export function ProductCard({ product }: { product: Product }) {
           <Link href={`/category/${product.categorySlug}`} className="product-category">{product.category}</Link>
           <h3><Link href={`/product/${product.slug}`}>{product.title}</Link></h3>
         </div>
-        <strong>{formatPrice(product.price)}</strong>
+        <div className="product-price-stack">
+          {product.compareAtPrice && product.compareAtPrice > product.price && (
+            <del>{formatPrice(product.compareAtPrice)}</del>
+          )}
+          <strong>{formatPrice(product.price)}</strong>
+        </div>
       </div>
     </article>
   );
