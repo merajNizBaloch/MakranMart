@@ -116,7 +116,12 @@ export default function CheckoutPage() {
               <div className="summary-empty"><p>Your cart is empty.</p><Link href="/products">Browse products →</Link></div>
             ) : items.map((item) => (
               <div className="summary-item" key={item.slug}>
-                <div className={`summary-thumb ${item.visual}`}><span>MM</span></div>
+                <div
+                  className={`summary-thumb ${item.visual}`}
+                  style={item.imageUrl ? { backgroundImage: `url("${item.imageUrl}")` } : undefined}
+                >
+                  {!item.imageUrl && <span>MM</span>}
+                </div>
                 <div className="summary-copy">
                   <strong>{item.title}</strong>
                   <small>{formatPrice(item.price)}</small>
