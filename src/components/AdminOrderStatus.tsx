@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const statuses = ["pending", "confirmed", "packed", "shipped", "delivered", "cancelled"];
+const transitions: Record<string, string[]> = {
+  pending: ["pending", "confirmed", "cancelled"],
+  confirmed: ["confirmed", "pending", "packed", "cancelled"],
+  packed: ["packed", "confirmed", "shipped", "cancelled"],
+  shipped: ["shipped", "packed", "delivered"],
+  delivered: ["delivered", "shipped"],
+  cancelled: ["cancelled", "pending"],
+};
 
 export function AdminOrderStatus({
   orderId,
@@ -21,12 +28,14 @@ export function AdminOrderStatus({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  const availableStatuses = transitions[status] || [status];
+
   async function save(nextStatus = value, nextNote = note) {
     if (saving) return;
 
     if (nextStatus === "cancelled" && status !== "cancelled") {
       const confirmed = window.confirm(
-        "Cancel this order? If it has not shipped, its stock will be returned to inventory."
+        "Cancel this order? Its allocated stock will be returned to inventory."
       );
       if (!confirmed) {
         setValue(status);
@@ -75,7 +84,7 @@ export function AdminOrderStatus({
           disabled={saving}
           aria-label="Order status"
         >
-          {statuses.map((item) => (
+          {availableStatuses.map((item) => (
             <option value={item} key={item}>{item}</option>
           ))}
         </select>
@@ -95,7 +104,7 @@ export function AdminOrderStatus({
             onChange={(event) => setValue(event.target.value)}
             disabled={saving}
           >
-            {statuses.map((item) => (
+            {availableStatuses.map((item) => (
               <option value={item} key={item}>{item}</option>
             ))}
           </select>
