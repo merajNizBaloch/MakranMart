@@ -7,10 +7,11 @@ export async function getStorefrontProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("makranmart_products")
     .select(
-      "slug, title, description, price, badge, visual, stock, makranmart_categories!makranmart_products_category_id_fkey(slug, name), makranmart_sellers!makranmart_products_seller_id_fkey(name, location)"
+      "slug, title, description, price, compare_at_price, sku, badge, visual, stock, image_url, is_featured, makranmart_categories!makranmart_products_category_id_fkey(slug, name), makranmart_sellers!makranmart_products_seller_id_fkey(name, location)"
     )
     .eq("is_active", true)
     .gt("stock", 0)
+    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
   if (error) return fallbackProducts;
@@ -28,12 +29,17 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       title: row.title,
       description: row.description || "",
       price: Number(row.price),
+      compareAtPrice: row.compare_at_price == null ? null : Number(row.compare_at_price),
+      sku: row.sku,
       badge: row.badge || "MakranMart",
       visual: row.visual || "visual-tech",
       category: category?.name || "Marketplace",
       categorySlug: category?.slug || "all",
       seller: seller?.name || "MakranMart Seller",
       location: seller?.location || "Pakistan",
+      imageUrl: row.image_url,
+      stock: Number(row.stock),
+      featured: Boolean(row.is_featured),
     };
   });
 }
