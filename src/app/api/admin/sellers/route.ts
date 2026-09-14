@@ -33,12 +33,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Enter a valid seller name and URL slug." }, { status: 400 });
   }
 
+  
   const { data, error } = await supabase
     .from("makranmart_sellers")
     .insert({
       name,
       slug,
       location: String(body.location || "").trim() || null,
+      description: String(body.description || "").trim() || null,
       contact_name: String(body.contactName || "").trim() || null,
       phone: String(body.phone || "").trim() || null,
       whatsapp: String(body.whatsapp || "").trim() || null,
