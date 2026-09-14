@@ -93,26 +93,31 @@ export async function getStorefrontCategories(): Promise<StorefrontCategory[]> {
   }));
 }
 
-export async function getStorefrontSeller(
-  slug: string
-): Promise<StorefrontSeller | null> {
+export async function getStorefrontSellers(): Promise<StorefrontSeller[]> {
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("makranmart_sellers")
     .select("id, slug, name, location, description, is_verified")
-    .eq("slug", slug)
     .eq("is_active", true)
-    .maybeSingle();
+    .order("is_verified", { ascending: false })
+    .order("name");
 
-  if (error || !data) return null;
+  if (error) return [];
 
-  return {
-    id: data.id,
-    slug: data.slug,
-    name: data.name,
-    location: data.location,
-    description: data.description,
-    verified: Boolean(data.is_verified),
-  };
+  return data.map((seller) => ({
+    id: seller.id,
+    slug: seller.slug,
+    name: seller.name,
+    location: seller.location,
+    description: seller.description,
+    verified: Boolean(seller.is_verified),
+  }));
+}
+
+export async function getStorefrontSeller(
+  slug: string
+): Promise<StorefrontSeller | null> {
+  const sellers = await getStorefrontSellers();
+  return sellers.find((seller) => seller.slug === slug) ?? null;
 }
