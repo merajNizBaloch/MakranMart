@@ -14,11 +14,6 @@ export default function LoginPage() {
     setMessage("");
 
     const supabase = createBrowserSupabaseClient();
-    if (!supabase) {
-      setMessage("Supabase is not connected yet. Add the project environment variables first.");
-      return;
-    }
-
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") || "").trim();
     const password = String(form.get("password") || "");
@@ -32,23 +27,51 @@ export default function LoginPage() {
     setLoading(true);
 
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
       });
+
+      if (!error && data.session && data.user) {
+        await supabase.from("makranmart_profiles").upsert({
+          id: data.user.id,
+          full_name: fullName,
+        });
+      }
+
       setLoading(false);
       if (error) return setMessage(error.message);
-      setMessage("Account created. You can now sign in.");
+
+      if (data.session) {
+        const next = new URLSearchParams(window.location.search).get("next") || "/";
+        window.location.href = next;
+        return;
+      }
+
+      setMessage("Account created. Check your email if confirmation is required, then sign in.");
       setMode("signin");
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return setMessage(error.message);
+    }
+
+    if (data.user) {
+      await supabase.from("makranmart_profiles").upsert(
+        {
+          id: data.user.id,
+          full_name:
+            String(data.user.user_metadata?.full_name || "").trim() || undefined,
+        },
+        { onConflict: "id" }
+      );
+    }
+
     setLoading(false);
-
-    if (error) return setMessage(error.message);
-
     const next = new URLSearchParams(window.location.search).get("next") || "/";
     window.location.href = next;
   }
