@@ -1,5 +1,15 @@
-import { products as fallbackProducts, type Product } from "@/lib/catalog";
+import {
+  categories as fallbackCategories,
+  products as fallbackProducts,
+  type Product,
+} from "@/lib/catalog";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+export type StorefrontCategory = {
+  slug: string;
+  name: string;
+  description: string | null;
+};
 
 export async function getStorefrontProducts(): Promise<Product[]> {
   const supabase = await createServerSupabaseClient();
@@ -42,4 +52,31 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       featured: Boolean(row.is_featured),
     };
   });
+}
+
+export async function getStorefrontCategories(): Promise<StorefrontCategory[]> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("makranmart_categories")
+    .select("slug, name, description")
+    .eq("is_active", true)
+    .order("sort_order")
+    .order("name");
+
+  if (error) {
+    return fallbackCategories
+      .filter((category) => category.slug !== "local-sellers")
+      .map((category) => ({
+        slug: category.slug,
+        name: category.label,
+        description: null,
+      }));
+  }
+
+  return data.map((category) => ({
+    slug: category.slug,
+    name: category.name,
+    description: category.description,
+  }));
 }
