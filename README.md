@@ -15,6 +15,10 @@ A modern shopping marketplace for Balochistan and Pakistan.
 - Protected MakranMart admin dashboard
 - One-time first-admin bootstrap
 - Product creation and editing
+- Seller onboarding and management
+- Category creation, ordering and visibility management
+- Product search by title, seller, city, description or SKU
+- Category, price and sort filters
 - Stock and visibility controls
 - Featured products, sale pricing and SKU support
 - Order status controls
@@ -66,3 +70,5 @@ Then open `http://localhost:3000`.
 - `/admin` operations dashboard
 - `/admin/products/new` create products
 - `/admin/products/[id]/edit` edit products
+- `/admin/sellers` seller management
+- `/admin/categories` category management
