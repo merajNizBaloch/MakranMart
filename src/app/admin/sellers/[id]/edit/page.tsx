@@ -22,13 +22,29 @@ export default async function EditSellerPage({
 
   if (profile?.role !== "admin") redirect("/admin");
 
-  const { data: seller } = await supabase
-    .from("makranmart_sellers")
-    .select("id, name, slug, location, description, contact_name, phone, whatsapp, email, notes, is_verified, is_active")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: seller }, { data: privateData }] = await Promise.all([
+    supabase
+      .from("makranmart_sellers")
+      .select("id, name, slug, location, description, is_verified, is_active")
+      .eq("id", id)
+      .maybeSingle(),
+    supabase
+      .from("makranmart_seller_private")
+      .select("contact_name, phone, whatsapp, email, notes")
+      .eq("seller_id", id)
+      .maybeSingle(),
+  ]);
 
   if (!seller) notFound();
+
+  const initial = {
+    ...seller,
+    contact_name: privateData?.contact_name || null,
+    phone: privateData?.phone || null,
+    whatsapp: privateData?.whatsapp || null,
+    email: privateData?.email || null,
+    notes: privateData?.notes || null,
+  };
 
   return (
     <main className="admin-editor-shell">
@@ -40,7 +56,7 @@ export default async function EditSellerPage({
         <Link href="/admin/sellers">← Sellers</Link>
       </header>
       <section className="admin-editor-card">
-        <AdminSellerForm initial={seller} />
+        <AdminSellerForm initial={initial} />
       </section>
     </main>
   );
