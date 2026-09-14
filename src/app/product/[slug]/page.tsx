@@ -25,11 +25,18 @@ export default async function ProductPage({
       <Header />
 
       <section className="product-detail">
-        <div className={`detail-visual ${product.visual}`}>
+        <div
+          className={`detail-visual ${product.visual} ${product.imageUrl ? "has-product-image" : ""}`}
+          style={product.imageUrl ? { backgroundImage: `url("${product.imageUrl}")` } : undefined}
+        >
           <span className="product-badge">{product.badge}</span>
-          <span className="detail-ring ring-one" />
-          <span className="detail-ring ring-two" />
-          <span className="detail-mark">MM</span>
+          {!product.imageUrl && (
+            <>
+              <span className="detail-ring ring-one" />
+              <span className="detail-ring ring-two" />
+              <span className="detail-mark">MM</span>
+            </>
+          )}
         </div>
 
         <div className="detail-copy">
@@ -40,7 +47,12 @@ export default async function ProductPage({
           </div>
 
           <h1>{product.title}</h1>
-          <p className="detail-price">{formatPrice(product.price)}</p>
+          <div className="detail-price-row">
+            <p className="detail-price">{formatPrice(product.price)}</p>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <del>{formatPrice(product.compareAtPrice)}</del>
+            )}
+          </div>
           <p className="detail-description">{product.description}</p>
 
           <div className="seller-note">
@@ -55,6 +67,7 @@ export default async function ProductPage({
           <AddToCartButton product={product} />
 
           <div className="detail-meta">
+            <div><span>Availability</span><strong>{product.stock ?? 0} in stock</strong></div>
             <div><span>Delivery</span><strong>Across Pakistan</strong></div>
             <div><span>Payment</span><strong>Cash on delivery ready</strong></div>
             <div><span>Support</span><strong>Verified seller assistance</strong></div>
