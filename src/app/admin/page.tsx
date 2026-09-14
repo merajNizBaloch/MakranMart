@@ -8,24 +8,6 @@ import { AdminProductControls } from "@/components/AdminProductControls";
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient();
 
-  if (!supabase) {
-    return (
-      <main className="admin-shell">
-        <div className="admin-top">
-          <Link href="/" className="brand">
-            <span className="brand-mark">M</span>
-            <span>MakranMart</span>
-          </Link>
-        </div>
-        <section className="admin-setup-card">
-          <p className="eyebrow">Admin setup</p>
-          <h1>Connect Supabase to activate the dashboard.</h1>
-          <p>Add the MakranMart Supabase URL, anon key and service role key in your deployment environment.</p>
-        </section>
-      </main>
-    );
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,7 +15,7 @@ export default async function AdminPage() {
   if (!user) redirect("/login?next=/admin");
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("makranmart_profiles")
     .select("role, full_name")
     .eq("id", user.id)
     .maybeSingle();
@@ -59,12 +41,12 @@ export default async function AdminPage() {
 
   const [{ data: orders }, { data: dbProducts }] = await Promise.all([
     supabase
-      .from("orders")
+      .from("makranmart_orders")
       .select("id, order_number, customer_name, city, status, total, created_at")
       .order("created_at", { ascending: false })
       .limit(20),
     supabase
-      .from("products")
+      .from("makranmart_products")
       .select("id, title, stock, price, is_active")
       .order("created_at", { ascending: false })
       .limit(20),
