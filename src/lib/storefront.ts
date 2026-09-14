@@ -3,12 +3,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function getStorefrontProducts(): Promise<Product[]> {
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return fallbackProducts;
 
   const { data, error } = await supabase
-    .from("products")
+    .from("makranmart_products")
     .select(
-      "slug, title, description, price, badge, visual, stock, categories!products_category_id_fkey(slug, name), sellers!products_seller_id_fkey(name, location)"
+      "slug, title, description, price, badge, visual, stock, makranmart_categories!makranmart_products_category_id_fkey(slug, name), makranmart_sellers!makranmart_products_seller_id_fkey(name, location)"
     )
     .eq("is_active", true)
     .gt("stock", 0)
@@ -17,8 +16,12 @@ export async function getStorefrontProducts(): Promise<Product[]> {
   if (error || !data?.length) return fallbackProducts;
 
   return data.map((row) => {
-    const category = Array.isArray(row.categories) ? row.categories[0] : row.categories;
-    const seller = Array.isArray(row.sellers) ? row.sellers[0] : row.sellers;
+    const category = Array.isArray(row.makranmart_categories)
+      ? row.makranmart_categories[0]
+      : row.makranmart_categories;
+    const seller = Array.isArray(row.makranmart_sellers)
+      ? row.makranmart_sellers[0]
+      : row.makranmart_sellers;
 
     return {
       slug: row.slug,
@@ -33,9 +36,4 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       location: seller?.location || "Pakistan",
     };
   });
-}
-
-export async function getStorefrontProduct(slug: string) {
-  const products = await getStorefrontProducts();
-  return products.find((product) => product.slug === slug) ?? null;
 }
