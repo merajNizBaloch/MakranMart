@@ -1,12 +1,75 @@
 "use client";
 
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { useCart } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/catalog";
 
+type OrderResult = {
+  orderNumber: string;
+  total: number;
+};
+
 export default function CheckoutPage() {
-  const { items, total, updateQuantity, removeItem } = useCart();
+  const { items, total, updateQuantity, removeItem, clearCart } = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [order, setOrder] = useState<OrderResult | null>(null);
+
+  async function submitOrder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (items.length === 0 || submitting) return;
+
+    setError("");
+    setSubmitting(true);
+
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerName: form.get("customerName"),
+        phone: form.get("phone"),
+        address: form.get("address"),
+        city: form.get("city"),
+        province: form.get("province"),
+        items: items.map((item) => ({ slug: item.slug, quantity: item.quantity })),
+      }),
+    });
+
+    const result = await response.json().catch(() => null);
+    setSubmitting(false);
+
+    if (!response.ok) {
+      setError(result?.error || "We could not place your order. Please try again.");
+      return;
+    }
+
+    setOrder({ orderNumber: result.orderNumber, total: result.total });
+    clearCart();
+  }
+
+  if (order) {
+    return (
+      <main>
+        <Header />
+        <section className="order-success">
+          <span className="success-mark">✓</span>
+          <p className="eyebrow">Order confirmed</p>
+          <h1>Thank you. We received your order.</h1>
+          <p>
+            Your order number is <strong>{order.orderNumber}</strong>. The order total is{" "}
+            <strong>{formatPrice(order.total)}</strong>.
+          </p>
+          <div className="order-success-actions">
+            <Link href="/products" className="primary-cta">Continue shopping <span>↗</span></Link>
+            <Link href="/" className="secondary-cta">Back to home</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main>
@@ -16,16 +79,16 @@ export default function CheckoutPage() {
           <p className="eyebrow">Secure checkout</p>
           <h1>Where should we send it?</h1>
 
-          <form className="checkout-form" onSubmit={(event) => event.preventDefault()}>
+          <form className="checkout-form" onSubmit={submitOrder}>
             <div className="form-grid">
-              <label>Full name<input type="text" placeholder="Your full name" /></label>
-              <label>Phone number<input type="tel" placeholder="03XX XXXXXXX" /></label>
+              <label>Full name<input name="customerName" type="text" placeholder="Your full name" required /></label>
+              <label>Phone number<input name="phone" type="tel" placeholder="03XX XXXXXXX" required /></label>
             </div>
-            <label>Delivery address<input type="text" placeholder="House, street, area" /></label>
+            <label>Delivery address<input name="address" type="text" placeholder="House, street, area" required /></label>
             <div className="form-grid">
-              <label>City<input type="text" placeholder="Panjgur" /></label>
+              <label>City<input name="city" type="text" placeholder="Panjgur" required /></label>
               <label>Province
-                <select defaultValue="Balochistan">
+                <select name="province" defaultValue="Balochistan">
                   <option>Balochistan</option><option>Sindh</option><option>Punjab</option><option>Khyber Pakhtunkhwa</option><option>Islamabad</option><option>Gilgit-Baltistan</option><option>Azad Kashmir</option>
                 </select>
               </label>
@@ -34,8 +97,11 @@ export default function CheckoutPage() {
               <input type="radio" name="payment" defaultChecked />
               <span><strong>Cash on delivery</strong><small>Pay when your order arrives.</small></span>
             </label>
-            <button className="place-order-button" type="submit" disabled={items.length === 0}>Place order <span>↗</span></button>
-            <p className="checkout-demo-note">Order processing will be connected to the MakranMart database in the next backend stage.</p>
+            <button className="place-order-button" type="submit" disabled={items.length === 0 || submitting}>
+              {submitting ? "Placing order…" : "Place order"} <span>↗</span>
+            </button>
+            {error && <p className="checkout-error">{error}</p>}
+            <p className="checkout-demo-note">Prices are validated by the server before an order is created.</p>
           </form>
         </div>
 
@@ -55,10 +121,10 @@ export default function CheckoutPage() {
                   <strong>{item.title}</strong>
                   <small>{formatPrice(item.price)}</small>
                   <div className="summary-actions">
-                    <button onClick={() => updateQuantity(item.slug, item.quantity - 1)}>−</button>
+                    <button type="button" onClick={() => updateQuantity(item.slug, item.quantity - 1)}>−</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.slug, item.quantity + 1)}>+</button>
-                    <button onClick={() => removeItem(item.slug)}>×</button>
+                    <button type="button" onClick={() => updateQuantity(item.slug, item.quantity + 1)}>+</button>
+                    <button type="button" onClick={() => removeItem(item.slug)}>×</button>
                   </div>
                 </div>
               </div>
