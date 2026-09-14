@@ -121,7 +121,7 @@ export default function CheckoutPage() {
           </p>
           <div className="order-success-actions">
             <Link href="/products" className="primary-cta">Continue shopping <span>↗</span></Link>
-            <Link href="/account" className="secondary-cta">View my orders</Link>
+            <Link href="/" className="secondary-cta">Back to home</Link>
           </div>
         </section>
       </main>
