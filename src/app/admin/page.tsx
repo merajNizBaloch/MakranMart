@@ -102,7 +102,12 @@ export default async function AdminPage() {
         </Link>
         <Link href="/admin/categories">
           <span>03</span>
-          <div><strong>Manage categories</strong><small>Organize the storefront and category visibility.</small></div>
+          <div><strong>Manage categories</strong><small>Organize storefront navigation and visibility.</small></div>
+          <b>↗</b>
+        </Link>
+        <Link href="/admin/shipping">
+          <span>04</span>
+          <div><strong>Shipping rules</strong><small>Set fees, free-delivery thresholds and delivery times.</small></div>
           <b>↗</b>
         </Link>
       </section>
