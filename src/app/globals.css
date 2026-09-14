@@ -2150,3 +2150,74 @@ main {
     padding: 30px 22px;
   }
 }
+
+
+.admin-status-select {
+  width: fit-content;
+  min-width: 112px;
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.inventory-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.stock-stepper button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0ece6;
+  cursor: pointer;
+}
+
+.stock-stepper span {
+  min-width: 24px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.visibility-toggle {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #eadbd8;
+  color: #824b43;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.visibility-toggle.active {
+  background: #dcebdc;
+  color: #35663a;
+}
+
+.admin-status-select:disabled,
+.stock-stepper button:disabled,
+.visibility-toggle:disabled {
+  opacity: .55;
+  cursor: wait;
+}
