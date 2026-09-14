@@ -2764,3 +2764,13 @@ main {
     width: 100%;
   }
 }
+
+
+@media (max-width: 760px) {
+  .nav-actions .account-button {
+    display: inline-flex;
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+}
