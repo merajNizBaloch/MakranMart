@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/catalog";
+import { AdminOrderStatus } from "@/components/AdminOrderStatus";
+import { AdminProductControls } from "@/components/AdminProductControls";
 
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient();
@@ -108,7 +110,7 @@ export default async function AdminPage() {
               <div className="admin-table-row" key={order.id}>
                 <span><strong>{order.order_number}</strong><small>{order.city}</small></span>
                 <span>{order.customer_name}</span>
-                <span className={`status-pill status-${order.status}`}>{order.status}</span>
+                <AdminOrderStatus orderId={order.id} status={order.status} />
                 <span>{formatPrice(Number(order.total || 0))}</span>
               </div>
             ))}
@@ -117,13 +119,13 @@ export default async function AdminPage() {
         </div>
 
         <div className="admin-panel">
-          <div className="admin-panel-head"><h2>Inventory</h2><span>Latest 20</span></div>
+          <div className="admin-panel-head"><h2>Inventory</h2><span>Live controls</span></div>
           <div className="admin-table admin-products-table">
-            <div className="admin-table-row admin-table-labels"><span>Product</span><span>Stock</span><span>Price</span></div>
+            <div className="admin-table-row admin-table-labels"><span>Product</span><span>Inventory</span><span>Price</span></div>
             {(dbProducts || []).map((product) => (
               <div className="admin-table-row" key={product.id}>
-                <span><strong>{product.title}</strong><small>{product.is_active ? "Active" : "Hidden"}</small></span>
-                <span>{product.stock}</span>
+                <span><strong>{product.title}</strong><small>{product.is_active ? "Visible in store" : "Hidden from store"}</small></span>
+                <AdminProductControls productId={product.id} stock={Number(product.stock)} active={Boolean(product.is_active)} />
                 <span>{formatPrice(Number(product.price || 0))}</span>
               </div>
             ))}
