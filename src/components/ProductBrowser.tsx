@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import type { Product } from "@/lib/catalog";
@@ -11,6 +12,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
   const [category, setCategory] = useState("all");
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState<SortMode>("featured");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const categoryOptions = useMemo(
     () =>
@@ -59,20 +61,67 @@ export function ProductBrowser({ products }: { products: Product[] }) {
     });
   }, [products, query, category, price, sort]);
 
-  const hasFilters = query || category !== "all" || price !== "all" || sort !== "featured";
+  const suggestions = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (normalized.length < 2) return [];
+
+    return products
+      .filter((product) =>
+        [product.title, product.seller, product.category, product.location]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalized)
+      )
+      .slice(0, 6);
+  }, [products, query]);
+
+  const hasFilters =
+    query || category !== "all" || price !== "all" || sort !== "featured";
+
+  function reset() {
+    setQuery("");
+    setCategory("all");
+    setPrice("all");
+    setSort("featured");
+  }
 
   return (
     <div className="product-browser">
       <div className="catalog-filter-bar">
-        <label className="catalog-search">
-          <span>⌕</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search products, sellers, cities…"
-            aria-label="Search products"
-          />
-        </label>
+        <div className="catalog-search-wrap">
+          <label className="catalog-search">
+            <span>⌕</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
+              placeholder="Search products, sellers, cities…"
+              aria-label="Search products"
+              autoComplete="off"
+            />
+          </label>
+
+          {searchFocused && suggestions.length > 0 && (
+            <div className="search-suggestions">
+              {suggestions.map((product) => (
+                <Link href={`/product/${product.slug}`} key={product.slug}>
+                  <span
+                    className={`suggestion-thumb ${product.visual}`}
+                    style={product.imageUrl ? { backgroundImage: `url("${product.imageUrl}")` } : undefined}
+                  >
+                    {!product.imageUrl && "MM"}
+                  </span>
+                  <span className="suggestion-copy">
+                    <strong>{product.title}</strong>
+                    <small>{product.seller} · {product.category}</small>
+                  </span>
+                  <b>↗</b>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         <select value={category} onChange={(event) => setCategory(event.target.value)} aria-label="Filter by category">
           <option value="all">All categories</option>
@@ -99,15 +148,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
       <div className="results-head product-browser-head">
         <span>{filtered.length} of {products.length} products</span>
         {hasFilters ? (
-          <button
-            className="clear-filter"
-            onClick={() => {
-              setQuery("");
-              setCategory("all");
-              setPrice("all");
-              setSort("featured");
-            }}
-          >
+          <button className="clear-filter" onClick={reset}>
             Clear filters
           </button>
         ) : (
@@ -126,15 +167,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
           <span>⌕</span>
           <h2>No products found.</h2>
           <p>Try another product name, seller, category or price range.</p>
-          <button
-            className="primary-cta"
-            onClick={() => {
-              setQuery("");
-              setCategory("all");
-              setPrice("all");
-              setSort("featured");
-            }}
-          >
+          <button className="primary-cta" onClick={reset}>
             Reset search
           </button>
         </div>
