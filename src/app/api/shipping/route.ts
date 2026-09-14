@@ -26,6 +26,7 @@ export async function POST(request: Request) {
 
   if (error || !rule) {
     return NextResponse.json({
+      available: false,
       fee: 0,
       etaMinDays: null,
       etaMaxDays: null,
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       : Number(rule.fee);
 
   return NextResponse.json({
+    available: true,
     fee,
     etaMinDays: Number(rule.eta_min_days),
     etaMaxDays: Number(rule.eta_max_days),
