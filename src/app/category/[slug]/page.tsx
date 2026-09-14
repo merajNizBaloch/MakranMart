@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
-import { categories } from "@/lib/catalog";
-import { getStorefrontProducts } from "@/lib/storefront";
+import {
+  getStorefrontCategories,
+  getStorefrontProducts,
+} from "@/lib/storefront";
 
 export default async function CategoryPage({
   params,
@@ -11,20 +13,30 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  const [products, categories] = await Promise.all([
+    getStorefrontProducts(),
+    getStorefrontCategories(),
+  ]);
+
   const category = categories.find((item) => item.slug === slug);
   if (!category) notFound();
 
-  const products = await getStorefrontProducts();
-  const categoryProducts = products.filter((product) => product.categorySlug === slug);
+  const categoryProducts = products.filter(
+    (product) => product.categorySlug === slug
+  );
 
   return (
     <main>
       <div className="catalog-top category-top">
         <Header />
         <div className="catalog-hero">
-          <p className="eyebrow">Category / {category.label}</p>
-          <h1>{category.label}</h1>
-          <p>Explore selected products from trusted MakranMart sellers.</p>
+          <p className="eyebrow">Category / {category.name}</p>
+          <h1>{category.name}</h1>
+          <p>
+            {category.description ||
+              "Explore selected products from trusted MakranMart sellers."}
+          </p>
         </div>
       </div>
 
@@ -36,14 +48,18 @@ export default async function CategoryPage({
 
         {categoryProducts.length > 0 ? (
           <div className="product-grid catalog-grid">
-            {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} />)}
+            {categoryProducts.map((product) => (
+              <ProductCard key={product.slug} product={product} />
+            ))}
           </div>
         ) : (
           <div className="category-empty">
-            <span>{category.icon}</span>
+            <span>✦</span>
             <h2>Products are coming soon.</h2>
             <p>We are onboarding sellers for this category now.</p>
-            <Link href="/products" className="primary-cta">Browse available products <span>↗</span></Link>
+            <Link href="/products" className="primary-cta">
+              Browse available products <span>↗</span>
+            </Link>
           </div>
         )}
       </section>
