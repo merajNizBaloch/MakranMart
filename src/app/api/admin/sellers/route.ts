@@ -33,19 +33,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Enter a valid seller name and URL slug." }, { status: 400 });
   }
 
-  
-  const { data, error } = await supabase
+  const { data: seller, error } = await supabase
     .from("makranmart_sellers")
     .insert({
       name,
       slug,
       location: String(body.location || "").trim() || null,
       description: String(body.description || "").trim() || null,
-      contact_name: String(body.contactName || "").trim() || null,
-      phone: String(body.phone || "").trim() || null,
-      whatsapp: String(body.whatsapp || "").trim() || null,
-      email: String(body.email || "").trim().toLowerCase() || null,
-      notes: String(body.notes || "").trim() || null,
       is_verified: Boolean(body.isVerified),
       is_active: Boolean(body.isActive),
       updated_at: new Date().toISOString(),
@@ -53,13 +47,30 @@ export async function POST(request: Request) {
     .select("id")
     .single();
 
-  if (error) {
-    const duplicate = error.code === "23505";
+  if (error || !seller) {
+    const duplicate = error?.code === "23505";
     return NextResponse.json(
       { error: duplicate ? "That seller slug is already in use." : "Could not add seller." },
       { status: duplicate ? 409 : 500 }
     );
   }
 
-  return NextResponse.json({ ok: true, id: data.id });
+  const { error: privateError } = await supabase
+    .from("makranmart_seller_private")
+    .insert({
+      seller_id: seller.id,
+      contact_name: String(body.contactName || "").trim() || null,
+      phone: String(body.phone || "").trim() || null,
+      whatsapp: String(body.whatsapp || "").trim() || null,
+      email: String(body.email || "").trim().toLowerCase() || null,
+      notes: String(body.notes || "").trim() || null,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (privateError) {
+    await supabase.from("makranmart_sellers").delete().eq("id", seller.id);
+    return NextResponse.json({ error: "Could not save seller contact details." }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, id: seller.id });
 }
