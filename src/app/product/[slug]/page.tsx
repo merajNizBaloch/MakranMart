@@ -58,26 +58,7 @@ export default async function ProductPage({
 
           <p className="detail-description">{product.description}</p>
 
-          {product.sellerSlug ? (
-            <Link href={`/seller/${product.sellerSlug}`} className="seller-note seller-note-link">
-              <span className="seller-avatar">{product.seller.slice(0, 1)}</span>
-              <div>
-                <small>Sold by</small>
-                <strong>{product.seller}{product.sellerVerified ? " ✓" : ""}</strong>
-                <span>{product.location}</span>
-              </div>
-              <b>↗</b>
-            </Link>
-          ) : (
-            <div className="seller-note">
-              <span className="seller-avatar">{product.seller.slice(0, 1)}</span>
-              <div>
-                <small>Sold by</small>
-                <strong>{product.seller}</strong>
-                <span>{product.location}</span>
-              </div>
-            </div>
-          )}
+          <p className="store-product-note">Sold and fulfilled by MakranMart</p>
 
           <div className="product-primary-actions">
             <AddToCartButton product={product} />
@@ -88,7 +69,7 @@ export default async function ProductPage({
             <div><span>Availability</span><strong>{product.stock ?? 0} in stock</strong></div>
             <div><span>Delivery</span><strong>Calculated by province at checkout</strong></div>
             <div><span>Payment</span><strong>Cash on delivery ready</strong></div>
-            <div><span>Support</span><strong>Verified seller assistance</strong></div>
+            <div><span>Support</span><strong>MakranMart customer support</strong></div>
           </div>
         </div>
       </section>

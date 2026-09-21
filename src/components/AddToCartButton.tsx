@@ -7,8 +7,8 @@ export function AddToCartButton({ product }: { product: Product }) {
   const { addItem } = useCart();
 
   return (
-    <button className="product-add-button" onClick={() => addItem(product)}>
-      Add to cart <span>+</span>
+    <button className="product-add-button" disabled={!product.stock} onClick={() => addItem(product)}>
+      {product.stock ? "Add to cart" : "Sold out"} <span>{product.stock ? "+" : ""}</span>
     </button>
   );
 }

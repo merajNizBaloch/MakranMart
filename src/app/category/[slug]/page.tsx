@@ -35,7 +35,7 @@ export default async function CategoryPage({
           <h1>{category.name}</h1>
           <p>
             {category.description ||
-              "Explore selected products from trusted MakranMart sellers."}
+              "Explore our handpicked MakranMart collection."}
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default async function CategoryPage({
           <div className="category-empty">
             <span>✦</span>
             <h2>Products are coming soon.</h2>
-            <p>We are onboarding sellers for this category now.</p>
+            <p>New products are coming to this collection.</p>
             <Link href="/products" className="primary-cta">
               Browse available products <span>↗</span>
             </Link>

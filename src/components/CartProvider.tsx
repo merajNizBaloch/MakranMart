@@ -30,6 +30,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("makranmart-cart");
+      // Restore device-local state after hydration.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored) setItems(JSON.parse(stored));
     } catch {}
     setReady(true);
@@ -41,11 +43,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, ready]);
 
   const addItem = (product: Product) => {
+    if (!product.stock) return;
     setItems((current) => {
       const existing = current.find((item) => item.slug === product.slug);
       if (existing) {
         return current.map((item) =>
-          item.slug === product.slug ? { ...item, quantity: item.quantity + 1 } : item
+          item.slug === product.slug ? { ...item, quantity: Math.min(item.quantity + 1, product.stock ?? 20, 20) } : item
         );
       }
       return [...current, { ...product, quantity: 1 }];
@@ -59,7 +62,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = (slug: string, quantity: number) => {
     if (quantity <= 0) return removeItem(slug);
     setItems((current) =>
-      current.map((item) => (item.slug === slug ? { ...item, quantity } : item))
+      current.map((item) => (item.slug === slug ? { ...item, quantity: Math.min(quantity, item.stock ?? 20, 20) } : item))
     );
   };
 

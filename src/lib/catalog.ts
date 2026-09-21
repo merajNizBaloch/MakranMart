@@ -8,10 +8,6 @@ export type Product = {
   badge: string;
   visual: string;
   description: string;
-  seller: string;
-  sellerSlug?: string;
-  sellerVerified?: boolean;
-  location: string;
   imageUrl?: string | null;
   stock?: number;
   compareAtPrice?: number | null;
@@ -30,117 +26,7 @@ export const categories = [
   { label: "Books", slug: "books", icon: "◫", tone: "blue", className: "chip-8" },
   { label: "Sports", slug: "sports", icon: "◉", tone: "violet", className: "chip-9" },
   { label: "Automotive", slug: "automotive", icon: "◈", tone: "lime", className: "chip-10" },
-  { label: "Local Sellers", slug: "local-sellers", icon: "▤", tone: "ink", className: "chip-11" },
 ];
-
-export const products: Product[] = [
-  {
-    slug: "handcrafted-balochi-tote",
-    title: "Handcrafted Balochi Tote",
-    category: "Balochi Crafts",
-    categorySlug: "balochi-crafts",
-    price: 2490,
-    badge: "Made in Balochistan",
-    visual: "visual-craft",
-    description: "A statement tote inspired by traditional Balochi craft, designed for everyday use.",
-    seller: "Makran Craft House",
-    sellerSlug: "makran-craft-house",
-    location: "Turbat, Balochistan",
-  },
-  {
-    slug: "wireless-earbuds-pro",
-    title: "Wireless Earbuds Pro",
-    category: "Electronics",
-    categorySlug: "electronics",
-    price: 4250,
-    badge: "Popular",
-    visual: "visual-tech",
-    description: "Compact wireless earbuds with clear calls, touch controls and all-day battery life.",
-    seller: "Digital Hub",
-    sellerSlug: "digital-hub",
-    location: "Quetta, Balochistan",
-  },
-  {
-    slug: "everyday-linen-kurta",
-    title: "Everyday Linen Kurta",
-    category: "Fashion",
-    categorySlug: "fashion",
-    price: 3190,
-    badge: "New",
-    visual: "visual-fashion",
-    description: "A breathable linen kurta with a clean silhouette for daily wear and warm weather.",
-    seller: "Sahil Wear",
-    sellerSlug: "sahil-wear",
-    location: "Gwadar, Balochistan",
-  },
-  {
-    slug: "minimal-table-lamp",
-    title: "Minimal Table Lamp",
-    category: "Home & Living",
-    categorySlug: "home-living",
-    price: 2850,
-    badge: "Home pick",
-    visual: "visual-home",
-    description: "Warm ambient lighting in a compact modern form for desks, bedsides and reading corners.",
-    seller: "Ghar Studio",
-    sellerSlug: "ghar-studio",
-    location: "Karachi, Sindh",
-  },
-  {
-    slug: "embroidered-wallet",
-    title: "Embroidered Wallet",
-    category: "Balochi Crafts",
-    categorySlug: "balochi-crafts",
-    price: 1290,
-    badge: "Local favorite",
-    visual: "visual-craft-alt",
-    description: "A compact wallet finished with colorful geometric embroidery and practical inner pockets.",
-    seller: "Panjgur Handmade",
-    sellerSlug: "panjgur-handmade",
-    location: "Panjgur, Balochistan",
-  },
-  {
-    slug: "power-bank-20000",
-    title: "20,000mAh Power Bank",
-    category: "Mobiles",
-    categorySlug: "mobiles",
-    price: 5490,
-    badge: "Fast charge",
-    visual: "visual-mobile",
-    description: "High-capacity portable charging with dual outputs for travel, work and daily use.",
-    seller: "Makran Mobile Center",
-    sellerSlug: "makran-mobile-center",
-    location: "Turbat, Balochistan",
-  },
-  {
-    slug: "classic-running-shoes",
-    title: "Classic Running Shoes",
-    category: "Sports",
-    categorySlug: "sports",
-    price: 3890,
-    badge: "Everyday sport",
-    visual: "visual-sport",
-    description: "Lightweight trainers with cushioned support for walking, running and daily wear.",
-    seller: "Active Pakistan",
-    sellerSlug: "active-pakistan",
-    location: "Lahore, Punjab",
-  },
-  {
-    slug: "premium-dates-box",
-    title: "Premium Dates Box",
-    category: "Groceries",
-    categorySlug: "groceries",
-    price: 1650,
-    badge: "Fresh stock",
-    visual: "visual-grocery",
-    description: "A carefully packed selection of naturally sweet dates for gifting and everyday snacking.",
-    seller: "Makran Foods",
-    sellerSlug: "makran-foods",
-    location: "Panjgur, Balochistan",
-  },
-];
-
-export const featuredProducts = products.slice(0, 4);
 
 export function formatPrice(price: number) {
   return `Rs. ${price.toLocaleString("en-PK")}`;

@@ -45,7 +45,7 @@ export default function LoginPage() {
 
       if (data.session) {
         const next = new URLSearchParams(window.location.search).get("next") || "/";
-        window.location.href = next;
+        window.location.href = next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/account";
         return;
       }
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
     setLoading(false);
     const next = new URLSearchParams(window.location.search).get("next") || "/";
-    window.location.href = next;
+    window.location.href = next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/account";
   }
 
   return (
