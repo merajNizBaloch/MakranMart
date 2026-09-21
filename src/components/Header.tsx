@@ -18,7 +18,7 @@ export function Header({ light = false }: { light?: boolean }) {
       <div className="nav-links">
         <Link href="/products">Shop</Link>
         <Link href="/category/balochi-crafts">Local finds</Link>
-        <Link href="/sellers">Sellers</Link>
+        <Link href="/account">My orders</Link>
       </div>
 
       <div className="nav-actions">

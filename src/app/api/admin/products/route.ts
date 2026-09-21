@@ -31,7 +31,9 @@ export async function POST(request: Request) {
   const price = Number(body.price);
   const stock = Number(body.stock);
   const categoryId = String(body.categoryId || "");
-  const sellerId = String(body.sellerId || "");
+  const { data: store } = await supabase.from("makranmart_sellers").select("id").eq("slug", "makranmart-store").eq("is_active", true).single();
+  if (!store) return NextResponse.json({ error: "Store configuration unavailable." }, { status: 503 });
+  const sellerId = store.id;
 
   if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     return NextResponse.json({ error: "Enter a valid title and URL slug." }, { status: 400 });
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
   }
 
   if (!categoryId || !sellerId) {
-    return NextResponse.json({ error: "Choose a category and seller." }, { status: 400 });
+    return NextResponse.json({ error: "Choose a category." }, { status: 400 });
   }
 
   const compareAtPrice =

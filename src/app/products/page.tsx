@@ -20,7 +20,7 @@ export default async function ProductsPage() {
           <p className="eyebrow">MakranMart catalog</p>
           <h1>Find what you need.</h1>
           <p>
-            Search products, sellers and locations, then filter by category,
+            Browse our collection and find your favourites. Filter by category,
             price or sort order.
           </p>
         </div>

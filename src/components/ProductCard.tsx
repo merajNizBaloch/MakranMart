@@ -27,9 +27,9 @@ export function ProductCard({ product }: { product: Product }) {
         )}
 
         <Link href={`/product/${product.slug}`} className="product-visual-link" aria-label={`View ${product.title}`} />
-        <span className="product-badge">{product.badge}</span>
+        <span className="product-badge">{product.stock ? product.badge : "Sold out"}</span>
         <div className="card-wishlist"><WishlistButton productId={product.id} /></div>
-        <button className="quick-add" onClick={() => addItem(product)} aria-label={`Add ${product.title} to cart`}>
+        <button className="quick-add" disabled={!product.stock} onClick={() => addItem(product)} aria-label={`Add ${product.title} to cart`}>
           +
         </button>
       </div>
@@ -38,13 +38,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div>
           <Link href={`/category/${product.categorySlug}`} className="product-category">{product.category}</Link>
           <h3><Link href={`/product/${product.slug}`}>{product.title}</Link></h3>
-          {product.sellerSlug ? (
-            <Link className="product-seller-link" href={`/seller/${product.sellerSlug}`}>
-              {product.seller}{product.sellerVerified ? " ✓" : ""}
-            </Link>
-          ) : (
-            <span className="product-seller-link">{product.seller}</span>
-          )}
+
         </div>
 
         <div className="product-price-stack">

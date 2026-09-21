@@ -25,11 +25,9 @@ type InitialProduct = {
 
 export function AdminProductForm({
   categories,
-  sellers,
   initial,
 }: {
   categories: Choice[];
-  sellers: Choice[];
   initial?: InitialProduct;
 }) {
   const router = useRouter();
@@ -110,7 +108,6 @@ export function AdminProductForm({
       badge: String(form.get("badge") || "").trim(),
       sku: String(form.get("sku") || "").trim(),
       categoryId: String(form.get("categoryId") || ""),
-      sellerId: String(form.get("sellerId") || ""),
       imageUrl: imageUrl || null,
       isActive: form.get("isActive") === "on",
       isFeatured: form.get("isFeatured") === "on",
@@ -213,15 +210,6 @@ export function AdminProductForm({
           </select>
         </label>
 
-        <label>
-          Seller
-          <select name="sellerId" defaultValue={initial?.seller_id || ""} required>
-            <option value="" disabled>Select seller</option>
-            {sellers.map((item) => (
-              <option value={item.id} key={item.id}>{item.name}</option>
-            ))}
-          </select>
-        </label>
       </div>
 
       <div className="admin-form-grid">

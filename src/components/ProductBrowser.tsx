@@ -31,8 +31,6 @@ export function ProductBrowser({ products }: { products: Product[] }) {
         [
           product.title,
           product.category,
-          product.seller,
-          product.location,
           product.description,
           product.sku || "",
         ]
@@ -67,7 +65,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
 
     return products
       .filter((product) =>
-        [product.title, product.seller, product.category, product.location]
+        [product.title, product.category]
           .join(" ")
           .toLowerCase()
           .includes(normalized)
@@ -96,7 +94,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
               onChange={(event) => setQuery(event.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
-              placeholder="Search products, sellers, cities…"
+              placeholder="Search our products…"
               aria-label="Search products"
               autoComplete="off"
             />
@@ -114,7 +112,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
                   </span>
                   <span className="suggestion-copy">
                     <strong>{product.title}</strong>
-                    <small>{product.seller} · {product.category}</small>
+                    <small>{product.category}</small>
                   </span>
                   <b>↗</b>
                 </Link>
@@ -166,7 +164,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
         <div className="catalog-no-results">
           <span>⌕</span>
           <h2>No products found.</h2>
-          <p>Try another product name, seller, category or price range.</p>
+          <p>Try another product name, category or price range.</p>
           <button className="primary-cta" onClick={reset}>
             Reset search
           </button>

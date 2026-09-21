@@ -4,9 +4,9 @@ import { CartProvider } from "@/components/CartProvider";
 import { WishlistProvider } from "@/components/WishlistProvider";
 
 export const metadata: Metadata = {
-  title: "MakranMart — Shop Balochistan & Pakistan",
+  title: "MakranMart — Your Online Store",
   description:
-    "A modern marketplace for fashion, electronics, home, local crafts and everyday essentials across Balochistan and Pakistan.",
+    "Shop fashion, electronics, home, local crafts and everyday essentials directly from MakranMart. Pay on delivery and track your orders.",
 };
 
 export default function RootLayout({
