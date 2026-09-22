@@ -7,7 +7,7 @@ type OrderRequest = {
   address?: string;
   city?: string;
   province?: string;
-  items?: Array<{ slug?: string; quantity?: number }>;
+  items?: Array<{ slug?: string; quantity?: number; variantId?: string | null }>;
 };
 
 export async function POST(request: Request) {
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
   const items = requestedItems.map((item) => ({
     slug: item.slug,
     quantity: Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 0))),
+    variantId: item.variantId || null,
   }));
 
   const supabase = await createServerSupabaseClient();
@@ -63,12 +64,15 @@ export async function POST(request: Request) {
     const message = error?.message || "We could not create your order.";
     const unavailable =
       message.toLowerCase().includes("stock") ||
-      message.toLowerCase().includes("unavailable");
+      message.toLowerCase().includes("unavailable") ||
+      message.toLowerCase().includes("option");
 
     return NextResponse.json(
       {
         error: unavailable
-          ? "One or more products are unavailable or do not have enough stock."
+          ? message.toLowerCase().includes("choose")
+            ? "Please choose an available option for each product."
+            : "One or more products or options are unavailable or do not have enough stock."
           : "We could not create your order. Please try again.",
       },
       { status: unavailable ? 400 : 500 }
