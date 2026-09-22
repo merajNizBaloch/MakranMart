@@ -43,7 +43,7 @@ export default async function AdminOrderDetailPage({
   const [{ data: order }, { data: events }] = await Promise.all([
     supabase
       .from("makranmart_orders")
-      .select("id, order_number, customer_id, customer_name, phone, address, city, province, payment_method, status, subtotal, delivery_fee, total, stock_released_at, created_at, updated_at, makranmart_order_items(id, product_id, product_slug, title, unit_price, quantity, line_total)")
+      .select("id, order_number, customer_id, customer_name, phone, address, city, province, payment_method, status, subtotal, delivery_fee, total, stock_released_at, created_at, updated_at, makranmart_order_items(id, product_id, product_slug, title, unit_price, quantity, line_total, variant_name, variant_sku)")
       .eq("id", id)
       .maybeSingle(),
     supabase
@@ -123,7 +123,7 @@ export default async function AdminOrderDetailPage({
                 <div className="invoice-item" key={item.id}>
                   <span>
                     <strong>{item.title}</strong>
-                    <small>{item.product_slug}</small>
+                    <small>{item.variant_name ? `${item.variant_name}${item.variant_sku ? ` · ${item.variant_sku}` : ""}` : item.product_slug}</small>
                   </span>
                   <span>{item.quantity}</span>
                   <span>{formatPrice(Number(item.unit_price))}</span>
