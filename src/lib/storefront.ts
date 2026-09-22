@@ -1,6 +1,7 @@
 import {
   categories as fallbackCategories,
   type Product,
+  type ProductVariant,
 } from "@/lib/catalog";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -16,7 +17,7 @@ export async function getStorefrontProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("makranmart_products")
     .select(
-      "id, slug, title, description, price, compare_at_price, sku, badge, visual, stock, image_url, is_featured, makranmart_categories!makranmart_products_category_id_fkey(slug, name)"
+      "id, slug, title, description, price, compare_at_price, sku, badge, visual, stock, image_url, gallery_urls, specifications, is_featured, is_new, is_bestseller, created_at, makranmart_categories!makranmart_products_category_id_fkey(slug, name), makranmart_product_variants(id, name, sku, price, stock, is_active, sort_order)"
     )
     .eq("is_active", true)
     .order("is_featured", { ascending: false })
@@ -28,6 +29,38 @@ export async function getStorefrontProducts(): Promise<Product[]> {
     const category = Array.isArray(row.makranmart_categories)
       ? row.makranmart_categories[0]
       : row.makranmart_categories;
+
+    const variants = ((row.makranmart_product_variants || []) as ProductVariant[])
+      .filter((variant) => variant.is_active !== false)
+      .sort((a: ProductVariant & { sort_order?: number }, b: ProductVariant & { sort_order?: number }) =>
+        Number(a.sort_order || 0) - Number(b.sort_order || 0)
+      )
+      .map((variant) => ({
+        id: variant.id,
+        name: variant.name,
+        sku: variant.sku,
+        price: variant.price == null ? null : Number(variant.price),
+        stock: Number(variant.stock || 0),
+      }));
+
+    const imageUrls = Array.from(
+      new Set(
+        [row.image_url, ...((row.gallery_urls || []) as string[])]
+          .filter((url): url is string => Boolean(url))
+      )
+    );
+
+    const stock = variants.length
+      ? variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0)
+      : Number(row.stock);
+
+    const specifications =
+      row.specifications && typeof row.specifications === "object" && !Array.isArray(row.specifications)
+        ? Object.fromEntries(
+            Object.entries(row.specifications as Record<string, unknown>).map(([key, value]) => [key, String(value)])
+          )
+        : {};
+
     return {
       id: row.id,
       slug: row.slug,
@@ -40,9 +73,15 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       visual: row.visual || "visual-tech",
       category: category?.name || "Collection",
       categorySlug: category?.slug || "all",
-      imageUrl: row.image_url,
-      stock: Number(row.stock),
+      imageUrl: imageUrls[0] || null,
+      imageUrls,
+      stock,
       featured: Boolean(row.is_featured),
+      isNew: Boolean(row.is_new),
+      isBestseller: Boolean(row.is_bestseller),
+      specifications,
+      variants,
+      createdAt: row.created_at,
     };
   });
 }
@@ -58,12 +97,11 @@ export async function getStorefrontCategories(): Promise<StorefrontCategory[]> {
     .order("name");
 
   if (error) {
-    return fallbackCategories
-      .map((category) => ({
-        slug: category.slug,
-        name: category.label,
-        description: null,
-      }));
+    return fallbackCategories.map((category) => ({
+      slug: category.slug,
+      name: category.label,
+      description: null,
+    }));
   }
 
   return data.map((category) => ({
@@ -72,4 +110,3 @@ export async function getStorefrontCategories(): Promise<StorefrontCategory[]> {
     description: category.description,
   }));
 }
-
