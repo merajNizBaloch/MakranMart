@@ -47,9 +47,10 @@ export function formatPrice(price: number) {
 }
 
 export function productDisplayPrice(product: Product) {
-  const variantPrices = (product.variants || [])
-    .filter((variant) => variant.stock > 0 && variant.price != null)
-    .map((variant) => Number(variant.price));
+  const variants = (product.variants || []).filter((variant) => variant.stock > 0);
+  if (!variants.length) return product.price;
 
-  return variantPrices.length ? Math.min(product.price, ...variantPrices) : product.price;
+  return Math.min(
+    ...variants.map((variant) => variant.price == null ? product.price : Number(variant.price))
+  );
 }
