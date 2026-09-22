@@ -2,25 +2,37 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { Product } from "@/lib/catalog";
+import type { Product, ProductVariant } from "@/lib/catalog";
 import { formatPrice } from "@/lib/catalog";
 
-type CartItem = Product & { quantity: number };
+export type CartItem = Product & {
+  quantity: number;
+  cartKey: string;
+  selectedVariant?: ProductVariant | null;
+};
 
 type CartContextValue = {
   items: CartItem[];
   count: number;
   total: number;
   isOpen: boolean;
-  addItem: (product: Product) => void;
-  removeItem: (slug: string) => void;
-  updateQuantity: (slug: string, quantity: number) => void;
+  addItem: (product: Product, variant?: ProductVariant | null) => void;
+  removeItem: (cartKey: string) => void;
+  updateQuantity: (cartKey: string, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function itemPrice(item: CartItem) {
+  return item.selectedVariant?.price == null ? item.price : Number(item.selectedVariant.price);
+}
+
+function itemStock(item: CartItem) {
+  return item.selectedVariant ? item.selectedVariant.stock : item.stock ?? 20;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -30,9 +42,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("makranmart-cart");
-      // Restore device-local state after hydration.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (stored) setItems(JSON.parse(stored));
+      if (stored) {
+        const parsed = JSON.parse(stored) as Array<Partial<CartItem> & Product>;
+        setItems(
+          parsed.map((item) => ({
+            ...item,
+            quantity: Math.max(1, Number(item.quantity || 1)),
+            cartKey: item.cartKey || `${item.slug}::${item.selectedVariant?.id || "base"}`,
+          }))
+        );
+      }
     } catch {}
     setReady(true);
   }, []);
@@ -42,27 +61,50 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("makranmart-cart", JSON.stringify(items));
   }, [items, ready]);
 
-  const addItem = (product: Product) => {
-    if (!product.stock) return;
+  const addItem = (product: Product, variant?: ProductVariant | null) => {
+    if (product.variants?.length && !variant) return;
+
+    const availableStock = variant ? variant.stock : product.stock || 0;
+    if (!availableStock) return;
+
+    const cartKey = `${product.slug}::${variant?.id || "base"}`;
+
     setItems((current) => {
-      const existing = current.find((item) => item.slug === product.slug);
+      const existing = current.find((item) => item.cartKey === cartKey);
       if (existing) {
         return current.map((item) =>
-          item.slug === product.slug ? { ...item, quantity: Math.min(item.quantity + 1, product.stock ?? 20, 20) } : item
+          item.cartKey === cartKey
+            ? { ...item, quantity: Math.min(item.quantity + 1, availableStock, 20) }
+            : item
         );
       }
-      return [...current, { ...product, quantity: 1 }];
+
+      return [
+        ...current,
+        {
+          ...product,
+          cartKey,
+          quantity: 1,
+          selectedVariant: variant || null,
+        },
+      ];
     });
+
     setIsOpen(true);
   };
 
-  const removeItem = (slug: string) =>
-    setItems((current) => current.filter((item) => item.slug !== slug));
+  const removeItem = (cartKey: string) =>
+    setItems((current) => current.filter((item) => item.cartKey !== cartKey));
 
-  const updateQuantity = (slug: string, quantity: number) => {
-    if (quantity <= 0) return removeItem(slug);
+  const updateQuantity = (cartKey: string, quantity: number) => {
+    if (quantity <= 0) return removeItem(cartKey);
+
     setItems((current) =>
-      current.map((item) => (item.slug === slug ? { ...item, quantity: Math.min(quantity, item.stock ?? 20, 20) } : item))
+      current.map((item) =>
+        item.cartKey === cartKey
+          ? { ...item, quantity: Math.min(quantity, itemStock(item), 20) }
+          : item
+      )
     );
   };
 
@@ -72,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const total = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () => items.reduce((sum, item) => sum + itemPrice(item) * item.quantity, 0),
     [items]
   );
 
@@ -117,7 +159,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             </div>
           ) : (
             items.map((item) => (
-              <div className="cart-item" key={item.slug}>
+              <div className="cart-item" key={item.cartKey}>
                 <Link
                   href={`/product/${item.slug}`}
                   className={`cart-thumb ${item.visual}`}
@@ -128,12 +170,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 </Link>
                 <div className="cart-item-copy">
                   <Link href={`/product/${item.slug}`} onClick={() => setIsOpen(false)}>{item.title}</Link>
-                  <small>{formatPrice(item.price)}</small>
+                  {item.selectedVariant && <small className="cart-variant">{item.selectedVariant.name}</small>}
+                  <small>{formatPrice(itemPrice(item))}</small>
                   <div className="quantity-row">
-                    <button onClick={() => updateQuantity(item.slug, item.quantity - 1)}>−</button>
+                    <button onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}>−</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.slug, item.quantity + 1)}>+</button>
-                    <button className="remove-item" onClick={() => removeItem(item.slug)}>Remove</button>
+                    <button onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}>+</button>
+                    <button className="remove-item" onClick={() => removeItem(item.cartKey)}>Remove</button>
                   </div>
                 </div>
               </div>
@@ -147,7 +190,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             <strong>{formatPrice(total)}</strong>
           </div>
           <p>Delivery is calculated at checkout.</p>
-          <Link href="/checkout" className={`checkout-button ${items.length === 0 ? "disabled" : ""}`} onClick={() => items.length > 0 && setIsOpen(false)}>
+          <Link
+            href="/checkout"
+            className={`checkout-button ${items.length === 0 ? "disabled" : ""}`}
+            onClick={() => items.length > 0 && setIsOpen(false)}
+          >
             Continue to checkout <span>↗</span>
           </Link>
         </div>
