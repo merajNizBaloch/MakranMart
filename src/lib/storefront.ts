@@ -30,9 +30,9 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       ? row.makranmart_categories[0]
       : row.makranmart_categories;
 
-    const variants = ((row.makranmart_product_variants || []) as ProductVariant[])
+    const variants = ((row.makranmart_product_variants || []) as Array<ProductVariant & { is_active?: boolean; sort_order?: number }>)
       .filter((variant) => variant.is_active !== false)
-      .sort((a: ProductVariant & { sort_order?: number }, b: ProductVariant & { sort_order?: number }) =>
+      .sort((a, b) =>
         Number(a.sort_order || 0) - Number(b.sort_order || 0)
       )
       .map((variant) => ({
