@@ -4,10 +4,57 @@ import { ProductCard } from "@/components/ProductCard";
 import { categories as categoryStyles } from "@/lib/catalog";
 import { getStorefrontProducts, getStorefrontCategories } from "@/lib/storefront";
 
+function ProductSection({
+  kicker,
+  title,
+  products,
+  href = "/products",
+}: {
+  kicker: string;
+  title: string;
+  products: Awaited<ReturnType<typeof getStorefrontProducts>>;
+  href?: string;
+}) {
+  if (!products.length) return null;
+
+  return (
+    <section className="section-wrap">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">{kicker}</p>
+          <h2>{title}</h2>
+        </div>
+        <Link href={href} className="text-link">View all products <span>↗</span></Link>
+      </div>
+      <div className="product-grid">
+        {products.slice(0, 4).map((product) => (
+          <ProductCard key={product.slug} product={product} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function Home() {
-  const [products, collections] = await Promise.all([getStorefrontProducts(), getStorefrontCategories()]);
-  const categories = collections.map((item, index) => ({ ...categoryStyles[index % categoryStyles.length], slug: item.slug, label: item.name }));
-  const featuredProducts = products.slice(0, 4);
+  const [products, collections] = await Promise.all([
+    getStorefrontProducts(),
+    getStorefrontCategories(),
+  ]);
+
+  const categories = collections.map((item, index) => ({
+    ...categoryStyles[index % categoryStyles.length],
+    slug: item.slug,
+    label: item.name,
+  }));
+
+  const featuredProducts = products.filter((product) => product.featured).slice(0, 4);
+  const fallbackFeatured = featuredProducts.length ? featuredProducts : products.slice(0, 4);
+  const newArrivals = products.filter((product) => product.isNew);
+  const bestSellers = products.filter((product) => product.isBestseller);
+  const saleProducts = products.filter(
+    (product) => product.compareAtPrice && product.compareAtPrice > product.price
+  );
+  const localFinds = products.filter((product) => product.categorySlug === "balochi-crafts");
 
   return (
     <main>
@@ -62,56 +109,48 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-wrap" id="featured">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Curated for you</p>
-            <h2>Picked for your everyday</h2>
-          </div>
-          <Link href="/products" className="text-link">
-            View all products <span>↗</span>
-          </Link>
-        </div>
+      <div id="featured">
+        <ProductSection kicker="Curated for you" title="Featured at MakranMart" products={fallbackFeatured} />
+      </div>
 
-        <div className="product-grid">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.slug} product={product} />
-          ))}
-        </div>
-      </section>
+      <ProductSection kicker="Just added" title="New arrivals" products={newArrivals} />
+      <ProductSection kicker="Customer favourites" title="Best sellers" products={bestSellers} />
+      <ProductSection kicker="Better prices" title="On sale" products={saleProducts} />
 
-      <section className="local-banner" id="local">
-        <div className="local-copy">
-          <p className="section-kicker">One store. Personal service.</p>
-          <h2>From our store to your doorstep.</h2>
-          <p>
-            Find your next favourite in our collection. Shop directly with
-            MakranMart, pay on delivery and follow your orders from your account.
-          </p>
-          <Link href="/products" className="primary-cta dark-on-light">
-            Shop our collection <span>↗</span>
-          </Link>
-        </div>
+      {localFinds.length > 0 && (
+        <section className="local-banner" id="local">
+          <div className="local-copy">
+            <p className="section-kicker">Made closer to home</p>
+            <h2>Discover local finds from Balochistan.</h2>
+            <p>
+              Explore selected craft and locally inspired products alongside the rest
+              of the MakranMart collection.
+            </p>
+            <Link href="/category/balochi-crafts" className="primary-cta dark-on-light">
+              Shop local finds <span>↗</span>
+            </Link>
+          </div>
 
-        <div className="seller-stack" aria-hidden="true">
-          <div className="seller-card seller-card-one">
-            <span>01</span>
-            <strong>Craft</strong>
-            <small>Handmade pieces</small>
+          <div className="seller-stack" aria-hidden="true">
+            <div className="seller-card seller-card-one">
+              <span>01</span><strong>Craft</strong><small>Handmade pieces</small>
+            </div>
+            <div className="seller-card seller-card-two">
+              <span>02</span><strong>Wear</strong><small>Local fashion</small>
+            </div>
+            <div className="seller-card seller-card-three">
+              <span>03</span><strong>Home</strong><small>Everyday essentials</small>
+            </div>
           </div>
-          <div className="seller-card seller-card-two">
-            <span>02</span>
-            <strong>Wear</strong>
-            <small>Local fashion</small>
-          </div>
-          <div className="seller-card seller-card-three">
-            <span>03</span>
-            <strong>Home</strong>
-            <small>Everyday essentials</small>
-          </div>
-        </div>
-      </section>
-      <footer className="store-footer"><span>MakranMart · A TechCraft startup</span><Link href="/account">Track your orders</Link><a href="https://wa.me/923336077281">Contact us on WhatsApp</a><Link href="/admin">Store admin</Link></footer>
+        </section>
+      )}
+
+      <footer className="store-footer">
+        <span>MakranMart · A TechCraft startup</span>
+        <Link href="/account">Track your orders</Link>
+        <a href="https://wa.me/923336077281">Contact us on WhatsApp</a>
+        <Link href="/admin">Store admin</Link>
+      </footer>
     </main>
   );
 }
