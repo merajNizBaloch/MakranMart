@@ -1,3 +1,11 @@
+export type ProductVariant = {
+  id: string;
+  name: string;
+  sku?: string | null;
+  price?: number | null;
+  stock: number;
+};
+
 export type Product = {
   id?: string;
   slug: string;
@@ -9,10 +17,16 @@ export type Product = {
   visual: string;
   description: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
   stock?: number;
   compareAtPrice?: number | null;
   sku?: string | null;
   featured?: boolean;
+  isNew?: boolean;
+  isBestseller?: boolean;
+  specifications?: Record<string, string>;
+  variants?: ProductVariant[];
+  createdAt?: string;
 };
 
 export const categories = [
@@ -30,4 +44,13 @@ export const categories = [
 
 export function formatPrice(price: number) {
   return `Rs. ${price.toLocaleString("en-PK")}`;
+}
+
+export function productDisplayPrice(product: Product) {
+  const variants = (product.variants || []).filter((variant) => variant.stock > 0);
+  if (!variants.length) return product.price;
+
+  return Math.min(
+    ...variants.map((variant) => variant.price == null ? product.price : Number(variant.price))
+  );
 }

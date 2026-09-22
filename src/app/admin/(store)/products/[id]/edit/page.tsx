@@ -25,7 +25,7 @@ export default async function EditProductPage({
   const [{ data: product }, { data: categories }] = await Promise.all([
     supabase
       .from("makranmart_products")
-      .select("id, title, slug, description, price, compare_at_price, stock, badge, sku, image_url, category_id, seller_id, is_active, is_featured")
+      .select("id, title, slug, description, price, compare_at_price, stock, badge, sku, image_url, gallery_urls, specifications, category_id, seller_id, is_active, is_featured, is_new, is_bestseller, makranmart_product_variants(id, name, sku, price, stock, is_active, sort_order)")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("makranmart_categories").select("id, name").order("name"),
