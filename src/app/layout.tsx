@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./product-v2.css";
 import { CartProvider } from "@/components/CartProvider";
 import { WishlistProvider } from "@/components/WishlistProvider";
 
