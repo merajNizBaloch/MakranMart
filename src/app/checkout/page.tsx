@@ -87,7 +87,11 @@ export default function CheckoutPage() {
         address: form.get("address"),
         city: form.get("city"),
         province: form.get("province"),
-        items: items.map((item) => ({ slug: item.slug, quantity: item.quantity })),
+        items: items.map((item) => ({
+          slug: item.slug,
+          quantity: item.quantity,
+          variantId: item.selectedVariant?.id || null,
+        })),
       }),
     });
 
@@ -230,7 +234,7 @@ export default function CheckoutPage() {
             {items.length === 0 ? (
               <div className="summary-empty"><p>Your cart is empty.</p><Link href="/products">Browse products →</Link></div>
             ) : items.map((item) => (
-              <div className="summary-item" key={item.slug}>
+              <div className="summary-item" key={item.cartKey}>
                 <div
                   className={`summary-thumb ${item.visual}`}
                   style={item.imageUrl ? { backgroundImage: `url("${item.imageUrl}")` } : undefined}
@@ -239,12 +243,13 @@ export default function CheckoutPage() {
                 </div>
                 <div className="summary-copy">
                   <strong>{item.title}</strong>
-                  <small>{formatPrice(item.price)}</small>
+                  {item.selectedVariant && <small>{item.selectedVariant.name}</small>}
+                  <small>{formatPrice(item.selectedVariant?.price == null ? item.price : Number(item.selectedVariant.price))}</small>
                   <div className="summary-actions">
-                    <button type="button" onClick={() => updateQuantity(item.slug, item.quantity - 1)}>−</button>
+                    <button type="button" onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}>−</button>
                     <span>{item.quantity}</span>
-                    <button type="button" onClick={() => updateQuantity(item.slug, item.quantity + 1)}>+</button>
-                    <button type="button" onClick={() => removeItem(item.slug)}>×</button>
+                    <button type="button" onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}>+</button>
+                    <button type="button" onClick={() => removeItem(item.cartKey)}>×</button>
                   </div>
                 </div>
               </div>
