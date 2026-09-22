@@ -11,6 +11,30 @@ export type StorefrontCategory = {
   description: string | null;
 };
 
+type RawVariant = ProductVariant & { is_active?: boolean; sort_order?: number };
+type RawCategory = { slug?: string; name?: string };
+type StorefrontRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  price: number | string;
+  compare_at_price: number | string | null;
+  sku: string | null;
+  badge: string | null;
+  visual: string | null;
+  stock: number | string;
+  image_url: string | null;
+  gallery_urls?: string[] | null;
+  specifications?: Record<string, unknown> | null;
+  is_featured: boolean;
+  is_new?: boolean;
+  is_bestseller?: boolean;
+  created_at: string;
+  makranmart_categories?: RawCategory | RawCategory[] | null;
+  makranmart_product_variants?: RawVariant[] | null;
+};
+
 export async function getStorefrontProducts(): Promise<Product[]> {
   const supabase = await createServerSupabaseClient();
 
@@ -23,7 +47,7 @@ export async function getStorefrontProducts(): Promise<Product[]> {
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
-  let rows: Array<Record<string, any>>;
+  let rows: StorefrontRow[];
 
   if (v2.error) {
     // Safe rollout fallback: keep the storefront available until Product System V2
@@ -41,9 +65,9 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       throw new Error("The store is temporarily unavailable. Please try again shortly.");
     }
 
-    rows = (legacy.data || []) as Array<Record<string, any>>;
+    rows = (legacy.data || []) as unknown as StorefrontRow[];
   } else {
-    rows = (v2.data || []) as Array<Record<string, any>>;
+    rows = (v2.data || []) as unknown as StorefrontRow[];
   }
 
   return rows.map((row) => {
@@ -51,7 +75,7 @@ export async function getStorefrontProducts(): Promise<Product[]> {
       ? row.makranmart_categories[0]
       : row.makranmart_categories;
 
-    const variants = ((row.makranmart_product_variants || []) as Array<ProductVariant & { is_active?: boolean; sort_order?: number }>)
+    const variants = (row.makranmart_product_variants || [])
       .filter((variant) => variant.is_active !== false)
       .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
       .map((variant) => ({
