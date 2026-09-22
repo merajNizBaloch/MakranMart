@@ -38,16 +38,13 @@ create policy "makranmart variants public read"
   on public.makranmart_product_variants for select
   to anon, authenticated
   using (
-    (
-      is_active
-      and exists (
-        select 1
-        from public.makranmart_products product
-        where product.id = makranmart_product_variants.product_id
-          and product.is_active = true
-      )
+    is_active
+    and exists (
+      select 1
+      from public.makranmart_products product
+      where product.id = makranmart_product_variants.product_id
+        and product.is_active = true
     )
-    or makranmart_private.is_admin()
   );
 
 drop policy if exists "makranmart admin variants all" on public.makranmart_product_variants;
