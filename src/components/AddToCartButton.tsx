@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/catalog";
 
 export function AddToCartButton({ product }: { product: Product }) {
   const { addItem } = useCart();
-  const variants = product.variants || [];
+  const variants = useMemo(() => product.variants || [], [product.variants]);
   const [selectedId, setSelectedId] = useState(variants.length === 1 ? variants[0].id : "");
 
   const selected = useMemo(
