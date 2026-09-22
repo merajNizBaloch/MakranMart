@@ -44,6 +44,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem("makranmart-cart");
       if (stored) {
         const parsed = JSON.parse(stored) as Array<Partial<CartItem> & Product>;
+        // Restore device-local state after hydration.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(
           parsed.map((item) => ({
             ...item,
