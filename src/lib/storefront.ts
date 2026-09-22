@@ -14,7 +14,7 @@ export type StorefrontCategory = {
 export async function getStorefrontProducts(): Promise<Product[]> {
   const supabase = await createServerSupabaseClient();
 
-  const { data, error } = await supabase
+  const v2 = await supabase
     .from("makranmart_products")
     .select(
       "id, slug, title, description, price, compare_at_price, sku, badge, visual, stock, image_url, gallery_urls, specifications, is_featured, is_new, is_bestseller, created_at, makranmart_categories!makranmart_products_category_id_fkey(slug, name), makranmart_product_variants(id, name, sku, price, stock, is_active, sort_order)"
@@ -23,18 +23,37 @@ export async function getStorefrontProducts(): Promise<Product[]> {
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error("The store is temporarily unavailable. Please try again shortly.");
+  let rows: Array<Record<string, any>>;
 
-  return data.map((row) => {
+  if (v2.error) {
+    // Safe rollout fallback: keep the storefront available until Product System V2
+    // has been applied to the connected Supabase project.
+    const legacy = await supabase
+      .from("makranmart_products")
+      .select(
+        "id, slug, title, description, price, compare_at_price, sku, badge, visual, stock, image_url, is_featured, created_at, makranmart_categories!makranmart_products_category_id_fkey(slug, name)"
+      )
+      .eq("is_active", true)
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (legacy.error) {
+      throw new Error("The store is temporarily unavailable. Please try again shortly.");
+    }
+
+    rows = (legacy.data || []) as Array<Record<string, any>>;
+  } else {
+    rows = (v2.data || []) as Array<Record<string, any>>;
+  }
+
+  return rows.map((row) => {
     const category = Array.isArray(row.makranmart_categories)
       ? row.makranmart_categories[0]
       : row.makranmart_categories;
 
     const variants = ((row.makranmart_product_variants || []) as Array<ProductVariant & { is_active?: boolean; sort_order?: number }>)
       .filter((variant) => variant.is_active !== false)
-      .sort((a, b) =>
-        Number(a.sort_order || 0) - Number(b.sort_order || 0)
-      )
+      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
       .map((variant) => ({
         id: variant.id,
         name: variant.name,
